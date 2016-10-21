@@ -1,0 +1,14 @@
+{
+  "name": "powertroll-api",
+  "version": "0.0.0",
+  "description": "API for PowerTroll",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "API"
+  ],
+  "author": "Benjamin Veenema",
+  "license": "ISC"
+}
