@@ -2,13 +2,28 @@
   "name": "powertroll-api",
   "version": "0.0.0",
   "description": "API for PowerTroll",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "test"
+    "start": "SET NODE_ENV=dev && node src/index.js",
+    "test": "mocha --watch --timeout 10000"
   },
   "keywords": [
     "API"
   ],
   "author": "Benjamin Veenema",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "mongodb": "^2.2.11",
+    "mongoose": "^4.6.5"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
+    "eslint": "^3.8.1",
+    "mocha": "^3.1.2",
+    "morgan": "^1.7.0",
+    "nodemon": "^1.11.0"
+  }
 }
