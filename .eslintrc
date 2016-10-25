@@ -8,7 +8,8 @@
     "semi": ["error", "never"],
     "no-console": 0,
     "no-param-reassign": ["error", { "props": false }],
-    "import/no-extraneous-dependencies": ["error", {"devDependencies": true}]
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
+    strict: [0, "global"]
   }
 
 }

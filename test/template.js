@@ -1,3 +1,5 @@
+'use strict'
+
 process.env.NODE_ENV = 'test'
 
 // const mongoose = require('mongoose')
@@ -6,7 +8,7 @@ const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../src/index')
 
-// const should = chai.should()
+const should = chai.should()
 
 chai.use(chaiHttp)
 

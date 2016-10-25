@@ -1,3 +1,5 @@
+'use strict'
+
 const Template = require('./template').Template
 
 const models = {

@@ -1,3 +1,5 @@
+'use strict'
+
 const express = require('express')
 const expressConfig = require('../config/express.config.js')
 const jsonParser = require('body-parser').json
@@ -35,7 +37,7 @@ dataBase.once('open', () => {
 
 
 // Error Handler
-app.use((err, req, res) => {
+app.use((err, req, res, next) => { //eslint-disable-line
   res.status(err.status || 500)
   res.json({
     error: {
