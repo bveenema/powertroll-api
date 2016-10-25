@@ -1,54 +1,51 @@
-'use strict'
-let express       = require('express'),
-    expressConfig = require('../config/express.config.js'),
-    jsonParser    = require('body-parser').json,
-    logger        = require('morgan'),
-    routes        = require('./routes/index.js')
+const express = require('express')
+const expressConfig = require('../config/express.config.js')
+const jsonParser = require('body-parser').json
+const logger = require('morgan')
+const routes = require('./routes/index.js')
 
-let app = express()
+const app = express()
 
 app.use(logger('dev'))
 app.use(jsonParser())
 
-app.use('/',routes)
+app.use('/', routes)
 
-let mongoose     = require("mongoose")
+const mongoose = require('mongoose')
 
 let mongoConfig = ''
 
-if(process.env.NODE_ENV === 'test') {
-  mongoConfig  = require('../config/mongoTest.config.js').uri
-}else {
-  mongoConfig  = require('../config/mongo.config.js').uri
+if (process.env.NODE_ENV === 'test') {
+  mongoConfig = require('../config/mongoTest.config.js').uri //eslint-disable-line
+} else {
+  mongoConfig = require('../config/mongo.config.js').uri //eslint-disable-line
 }
-
-
 
 mongoose.connect(mongoConfig)
 
-let dataBase = mongoose.connection
+const dataBase = mongoose.connection
 
-dataBase.on("error", function(err){
-	console.error("connection error:", err)
-});
+dataBase.on('error', (err) => {
+  console.error('connection error:', err)
+})
 
-dataBase.once("open", function(){
-	console.log("db connection successful")
-});
+dataBase.once('open', () => {
+  console.log('db connection successful')
+})
 
 
 // Error Handler
-app.use(function(err, req, res, next){
-	res.status(err.status || 500);
-	res.json({
-		error: {
-			message: err.message
-		}
-	});
-});
+app.use((err, req, res) => {
+  res.status(err.status || 500)
+  res.json({
+    error: {
+      message: err.message,
+    },
+  })
+})
 
-app.listen(expressConfig.port, function () {
-  console.log('Example app listening on port '+ expressConfig.port + '!');
-});
+app.listen(expressConfig.port, () => {
+  console.log(`Example app listening on port  ${expressConfig.port}!`)
+})
 
-module.exports = app //for testing
+module.exports = app // for testing

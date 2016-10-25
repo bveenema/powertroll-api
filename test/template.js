@@ -1,21 +1,19 @@
-'use strict'
-
 process.env.NODE_ENV = 'test'
 
-let mongoose = require('mongoose'),
-    Template = require('../src/models').Template
+// const mongoose = require('mongoose')
+const Template = require('../src/models').Template
+const chai = require('chai')
+const chaiHttp = require('chai-http')
+const server = require('../src/index')
 
-let chai = require('chai'),
-    chaiHttp = require('chai-http'),
-    server = require('../src/index')
-let should = chai.should()
+// const should = chai.should()
 
 chai.use(chaiHttp)
 
 // Parent Block
 describe('Templates', () => {
-  beforeEach((done) => { //Empty database before each test
-    Template.remove({}, (err) => {
+  beforeEach((done) => { // Empty database before each test
+    Template.remove({}, () => {
       done()
     })
   })
@@ -37,13 +35,13 @@ describe('Templates', () => {
   // Post Route
   describe('/POST Template', () => {
     it('should not POST a Template w/o a name field', (done) => {
-      let template = {
+      const template = {
         needsSensorType: 'temperature',
         defaultSettings: {
           controlType: 'resistive',
           loadType: 'setpoint',
-          controlMethod: 'PID'
-        }
+          controlMethod: 'PID',
+        },
       }
       chai.request(server)
           .post('/templates')
@@ -58,14 +56,14 @@ describe('Templates', () => {
           })
     })
     it('should POST a Template', (done) => {
-      let template = {
+      const template = {
         name: 'template',
         needsSensorType: 'any',
         defaultSettings: {
           controlType: 'resistive',
           loadType: 'setpoint',
-          controlMethod: 'PID'
-        }
+          controlMethod: 'PID',
+        },
       }
       chai.request(server)
         .post('/templates')
@@ -84,11 +82,11 @@ describe('Templates', () => {
   // GET /:tID Route
   describe('/GET/:tID Template', () => {
     it('should GET a specific Template given by id', (done) => {
-      let template = new Template({name:'newish template'})
-      template.save((err, template) => {
+      const template = new Template({ name: 'newish template' })
+      template.save((err, temp) => {
         chai.request(server)
-            .get('/templates/'+template.id)
-            .end((err, res) => {
+            .get(`/templates/${temp.id}`)
+            .end((error, res) => {
               res.should.have.status(200)
               res.body.should.be.a('object')
               res.body.should.have.property('name')
@@ -98,5 +96,4 @@ describe('Templates', () => {
       })
     })
   })
-
 })

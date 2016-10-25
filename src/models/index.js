@@ -1,7 +1,6 @@
-'use strict'
-let Template = require('./template').Template
+const Template = require('./template').Template
 
-let models = {
+const models = {
   Template,
 }
 

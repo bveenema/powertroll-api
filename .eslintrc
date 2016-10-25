@@ -1,6 +1,14 @@
 {
+  "extends": "airbnb-base",
   "env": {
-    "node": "true"
+    "node": "true",
+    "mocha": "true"
+  },
+  "rules": {
+    "semi": ["error", "never"],
+    "no-console": 0,
+    "no-param-reassign": ["error", { "props": false }],
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": true}]
   }
 
 }

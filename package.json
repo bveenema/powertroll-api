@@ -16,14 +16,16 @@
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "mongodb": "^2.2.11",
-    "mongoose": "^4.6.5"
+    "mongoose": "^4.6.5",
+    "morgan": "^1.7.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "eslint": "^3.8.1",
+    "eslint-config-airbnb-base": "^9.0.0",
+    "eslint-plugin-import": "^2.0.1",
     "mocha": "^3.1.2",
-    "morgan": "^1.7.0",
     "nodemon": "^1.11.0"
   }
 }

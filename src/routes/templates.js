@@ -1,72 +1,75 @@
-'use strict'
+const express = require('express')
+const Template = require('../models').Template
 
-let express   = require('express'),
-    templates    = express.Router({mergeParams: true})
+const templates = express.Router({ mergeParams: true })
 
-let Template= require('../models').Template
-
-templates.param('tID',(req,res,next,id) =>{
+templates.param('tID', (req, res, next, id) => {
   Template.findById(id, (err, doc) => {
-    if(err) return next(err)
-    if(!doc) {
-      err = new Error("Template Not Found")
-      err.status = 404
-      return next(err)
+    if (err) return next(err)
+    if (!doc) {
+      const error = new Error('Template Not Found')
+      error.status = 404
+      return next(error)
     }
     req.template = doc
     return next()
   })
 })
 
-templates.get('/', (req,res,next) => {
+templates.get('/', (req, res, next) => {
   Template.find({})
-          .sort({name: 1})
-          .exec((err, templates) => {
-  					if(err) return next(err)
-            let templatesSimplified = templates.map((template) => {
-              return {
+          .sort({ name: 1 })
+          .exec((err, Templates) => {
+            if (err) return next(err)
+            const TemplatesSimplified = Templates.map((template) => {
+              const returnVal = {
                 id: template.id,
                 name: template.name,
                 needsSensorType: template.needsSensorType,
                 defaultSettings: template.defaultSettings,
               }
+              return returnVal
             })
             res.status(200)
-  					res.json(templatesSimplified)
-  				})
+            res.json(TemplatesSimplified)
+            return null
+          })
 })
 
-templates.get('/detailed', (req,res,next) => {
+templates.get('/detailed', (req, res, next) => {
   Template.find({})
-          .sort({name: 1})
-          .exec((err, templates) => {
-  					if(err) return next(err)
+          .sort({ name: 1 })
+          .exec((err, Templates) => {
+            if (err) return next(err)
             res.status(200)
-  					res.json(templates)
-  				})
+            res.json(Templates)
+            return null
+          })
 })
 
-templates.get('/:tID', (req,res,next) => {
+templates.get('/:tID', (req, res) => {
   res.status(200)
   res.json(req.template)
 })
 
-templates.post('/', (req,res,next) => {
-  let template = new Template(req.body)
-  template.save((err,template) => {
-    if(err) {
-      if(err.message === 'Template validation failed') err.status = 200
+templates.post('/', (req, res, next) => {
+  const template = new Template(req.body)
+  template.save((err, temp) => {
+    if (err) {
+      if (err.message === 'Template validation failed') err.status = 200
       return next(err)
     }
     res.status(201)
-    res.json(template)
+    res.json(temp)
+    return null
   })
 })
 
-templates.put('/:tID', (req,res,next) => {
+templates.put('/:tID', (req, res, next) => {
   req.template.update(req.body, (err, result) => {
-    if(err) return next(err)
+    if (err) return next(err)
     res.json(result)
+    return null
   })
 })
 
