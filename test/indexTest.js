@@ -2,11 +2,14 @@
 
 process.env.NODE_ENV = 'test'
 
-describe('Wait for DB Connection', () => {
+describe('DB Connection', () => {
   before((done) => {
-    console.log('indexTest')
     setTimeout(() => {
       done()
-    }, 3000)
+    }, 1000)
+  })
+  it('Wait for db to connect', () => {
+    const x = true
+    x.should.be.eql(true)
   })
 })

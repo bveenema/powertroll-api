@@ -8,7 +8,6 @@ const routes = require('./routes/index.js')
 
 const app = express()
 
-app.use(logger('dev'))
 app.use(jsonParser())
 
 app.use('/', routes)
@@ -21,6 +20,7 @@ if (process.env.NODE_ENV === 'test') {
   mongoConfig = require('../config/mongoTest.config.js').uri //eslint-disable-line
 } else {
   mongoConfig = require('../config/mongo.config.js').uri //eslint-disable-line
+  app.use(logger('dev'))
 }
 
 mongoose.connect(mongoConfig)
@@ -40,11 +40,7 @@ dataBase.once('open', () => {
 // Error Handler
 app.use((err, req, res, next) => { //eslint-disable-line
   res.status(err.status || 500)
-  res.json({
-    error: {
-      message: err.message,
-    },
-  })
+  res.json(err)
 })
 
 app.listen(expressConfig.port, () => {

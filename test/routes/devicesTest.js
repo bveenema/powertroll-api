@@ -18,6 +18,8 @@ describe('/devices', () => {
     Device.remove({}, () => {
       done()
     })
+  })
+  before((done) => {
     const deviceDefault = {
       name: 'foo',
       type: 'bar',
@@ -43,12 +45,12 @@ describe('/devices', () => {
         long: 0,
       },
     }
-    ;for (let i = 0; i < 3; i + 1) {
-      deviceDefault.name += i
-      chai.request(server)
-          .post('/devices')
-          .send(deviceDefault)
-    }
+    chai.request(server)
+        .post('/devices')
+        .send(deviceDefault)
+        .end(() => {
+          done()
+        })
   })
 
   // /GET - All devices by all users, min-data
@@ -59,7 +61,7 @@ describe('/devices', () => {
         .end((err, res) => {
           res.should.have.status(200)
           res.body.should.be.a('array')
-          res.body.length.should.be.eql(3)
+          res.body.length.should.be.eql(1)
           res.body[0].should.have.property('name')
           res.body[0].should.have.property('type')
           res.body[0].should.have.property('firmware')
@@ -77,7 +79,7 @@ describe('/devices', () => {
         .end((err, res) => {
           res.should.have.status(200)
           res.body.should.be.a('array')
-          res.body.length.should.be.eql(3)
+          res.body.length.should.be.eql(1)
           res.body[0].should.have.property('name')
           res.body[0].should.have.property('meta')
           res.body[0].should.have.property('type')
@@ -105,9 +107,9 @@ describe('/devices', () => {
         .end((err, res) => {
           res.should.have.status(200)
           res.body.should.be.a('object')
-          res.body.should.have.property('error')
-          res.body.error.should.have.property('message')
-          res.body.error.message.should.be.eql('Device validation failed')
+          res.body.should.have.property('message')
+          res.body.message.should.be.eql('Device validation failed')
+          res.body.errors.ownedBy.message.should.be.eql('Device owner required')
           done()
         })
     })
@@ -135,7 +137,7 @@ describe('/devices', () => {
 
   // /POST/:uID - Create device ownedBy uID
   describe('/POST/:uID', () => {
-    it('should not POST a Device w/o a [type] field', (done) => {
+    it('should NOT POST a Device w/o a [type] field', (done) => {
       const d = {
         name: 'foo',
         firmware: '0.0.0',
@@ -146,9 +148,9 @@ describe('/devices', () => {
           .end((err, res) => {
             res.should.have.status(200)
             res.body.should.be.a('object')
-            res.body.should.have.property('error')
-            res.body.error.should.have.property('message')
-            res.body.error.message.should.be.eql('Device validation failed')
+            res.body.should.have.property('message')
+            res.body.message.should.be.eql('Device validation failed')
+            res.body.errors.type.message.should.be.eql('Device type required')
             done()
           })
     })
@@ -175,23 +177,26 @@ describe('/devices', () => {
 
   // /PUT/:dID - Update device with id tID
   describe('/PUT/:dID', () => {
+    let dID = 0
+    it('should get a Device ID', (done) => {
+      chai.request(server)
+          .get('/devices')
+          .end((err, res) => {
+            dID = res.body[0].id
+            done()
+          })
+    })
     it('should update the Device w/ dID', (done) => {
       const d = {
         name: 'fudge',
         type: 'barge',
         firmware: '1.1.1',
       }
-      let dID = 0
-      chai.request(server)
-          .get('/devices')
-          .end((err, res) => {
-            dID = res.body[0]._ID //eslint-disable-line
-          })
       chai.request(server)
         .put(`/devices/${dID}`)
         .send(d)
         .end((err, res) => {
-          res.should.have.status(201)
+          res.should.have.status(200)
           res.body.should.be.a('object')
           res.body.name.should.be.eql('fudge')
           res.body.type.should.be.eql('barge')

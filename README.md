@@ -51,6 +51,13 @@ module.exports = config
   - POST / - Posts a new template to the data base with the fields in req.body, must have name field
   - PUT /:tID - Updates the template with the given tID if exists
 
+- /devices
+  - GET / - Returns all devices in the database regardless of user, min-data [id, name, type, firmware, numSensors]
+  - GET /:uID - Returns all devices owned by the user (uID)
+  - POST / - Creates a device, not for general use (use POST /:uID)
+  - POST /:uID - Creates a device owned by the user (uID)
+  - PUT /:dID - Updates the device given by dID
+
 ## Models
 ### Template
 ``` JavaScript

@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "SET NODE_ENV=dev && node src/index.js",
-    "test": "mocha --recursive --watch --timeout 10000"
+    "test": "mocha --recursive --timeout 10000",
+    "test-watch": "mocha --recursive --watch --timeout 10000"
   },
   "keywords": [
     "API"

@@ -36,7 +36,7 @@ describe('/templates', () => {
 
   // Post Route
   describe('/POST Template', () => {
-    it('should not POST a Template w/o a name field', (done) => {
+    it('should NOT POST a Template w/o a [name] field', (done) => {
       const template = {
         needsSensorType: 'temperature',
         defaultSettings: {
@@ -51,9 +51,8 @@ describe('/templates', () => {
           .end((err, res) => {
             res.should.have.status(200)
             res.body.should.be.a('object')
-            res.body.should.have.property('error')
-            res.body.error.should.have.property('message')
-            res.body.error.message.should.be.eql('Template validation failed')
+            res.body.should.have.property('message')
+            res.body.message.should.be.eql('Template validation failed')
             done()
           })
     })
