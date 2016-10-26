@@ -13,7 +13,7 @@ const should = chai.should() //eslint-disable-line
 chai.use(chaiHttp)
 
 // Parent Block
-describe('Templates', () => {
+describe('/templates', () => {
   beforeEach((done) => { // Empty database before each test
     Template.remove({}, () => {
       done()

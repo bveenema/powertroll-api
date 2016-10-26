@@ -2,6 +2,7 @@
 
 const express = require('express')
 const templates = require('./templates')
+const devices = require('./devices')
 
 const router = express.Router()
 
@@ -11,5 +12,7 @@ router.get('/apiCheck', (req, res) => {
 })
 
 router.use('/templates', templates)
+
+router.use('/devices', devices)
 
 module.exports = router

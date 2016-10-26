@@ -33,6 +33,7 @@ dataBase.on('error', (err) => {
 
 dataBase.once('open', () => {
   console.log('db connection successful')
+  app.dataBaseIsConnected = true
 })
 
 

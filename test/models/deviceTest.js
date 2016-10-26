@@ -1,11 +1,18 @@
 'use strict'
 
+process.env.NODE_ENV = 'test'
+
 const chai = require('chai')
 const Device = require('../../src/models').Device
 
 const should = chai.should() //eslint-disable-line
 
-describe('Device', () => {
+describe('Device Model', () => {
+  before((done) => {
+    setTimeout(() => {
+      done()
+    }, 3000)
+  })
   it('should be invalid if [firmware, type, ownedBy] is empty', (done) => {
     const d = new Device()
     d.validate((err) => {
