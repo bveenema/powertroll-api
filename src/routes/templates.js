@@ -5,18 +5,6 @@ const Template = require('../models').Template
 
 const templates = express.Router({ mergeParams: true })
 
-templates.param('tID', (req, res, next, id) => {
-  Template.findById(id, (err, doc) => {
-    if (err) return next(err)
-    if (!doc) {
-      const error = new Error('Template Not Found')
-      error.status = 404
-      return next(error)
-    }
-    req.template = doc
-    return next()
-  })
-})
 
 templates.get('/', (req, res, next) => {
   Template.find({})
@@ -49,9 +37,19 @@ templates.get('/detailed', (req, res, next) => {
           })
 })
 
-templates.get('/:tID', (req, res) => {
-  res.status(200)
-  res.json(req.template)
+templates.get('/:tID', (req, res, next) => {
+  const tID = req.params.tID
+  Template.findById(tID, (err, doc) => {
+    if (err) return next(err)
+    if (!doc) {
+      const error = new Error('Template Not Found')
+      error.status = 404
+      return next(error)
+    }
+    res.status(200)
+    res.json(doc)
+    return null
+  })
 })
 
 templates.post('/', (req, res, next) => {
@@ -68,8 +66,10 @@ templates.post('/', (req, res, next) => {
 })
 
 templates.put('/:tID', (req, res, next) => {
-  req.template.update(req.body, (err, result) => {
+  const tID = req.params.tID
+  Template.findByIdAndUpdate(tID, req.body, { new: true }, (err, result) => {
     if (err) return next(err)
+    res.status(200)
     res.json(result)
     return null
   })

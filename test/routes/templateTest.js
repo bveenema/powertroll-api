@@ -100,31 +100,20 @@ describe('/templates', () => {
 
   // /PUT/:dID - Update device with id tID
   describe('/PUT/:tID', () => {
-    let tID = 0
-    it('should get a Template ID', (done) => {
-      chai.request(server)
-          .get('/template')
-          .end((err, res) => {
-            res.should.have.status(200)
-            res.body[0].should.be.a('object')
-            res.body[0].should.have.property('name')
-            tID = res.body[0].id
-            done()
-          })
-    })
     it('should update the Template w/ tID', (done) => {
-      const d = {
-        name: 'fudge',
-      }
-      chai.request(server)
-        .put(`/devices/${tID}`)
-        .send(d)
-        .end((err, res) => {
-          res.should.have.status(200)
-          res.body.should.be.a('object')
-          res.body.name.should.be.eql('fudge')
-          done()
-        })
+      const template = new Template({ name: 'newish template' })
+      const update = { name: 'fudge' }
+      template.save((err, temp) => {
+        chai.request(server)
+            .put(`/templates/${temp.id}`)
+            .send(update)
+            .end((error, res) => {
+              res.should.have.status(200)
+              res.body.should.be.a('object')
+              res.body.name.should.be.eql('fudge')
+              done()
+            })
+      })
     })
   })
 })
