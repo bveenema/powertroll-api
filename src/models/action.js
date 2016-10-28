@@ -35,8 +35,9 @@ const ActionSchema = new Schema({
   },
 })
 
-ActionSchema.virtual('sensors.local').get(() => this.sensors.wired.concat(this.sensors.wireless))
+ActionSchema.method('update', (updates, callback) => {
+  Object.assign(this, updates, { updatedAt: new Date() })
+  this.parent().save(callback)
+})
 
-const Action = mongoose.model('Action', ActionSchema)
-
-module.exports.Action = Action
+module.exports.ActionSchema = ActionSchema

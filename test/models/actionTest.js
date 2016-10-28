@@ -3,7 +3,10 @@
 process.env.NODE_ENV = 'test'
 
 const chai = require('chai')
-const Action = require('../../src/models').Action
+const mongoose = require('mongoose')
+const ActionSchema = require('../../src/models').ActionSchema
+
+const Action = mongoose.model('Action', ActionSchema)
 
 const should = chai.should() //eslint-disable-line
 
@@ -25,4 +28,12 @@ describe('Action Model', () => {
       done()
     })
   })
+  // it('should change the [meta.updatedAt] field to the current time when updated', sinon.test((done) => {
+  //   const a = new Action()
+  //   const callback = sinon.stub().returns(42)
+  //   const proxy = a.update({}, callback)
+  //
+  //   sinon.assert.equals(proxy(), 42)
+  //   done()
+  // }))
 })
