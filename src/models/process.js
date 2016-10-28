@@ -5,24 +5,29 @@ const ActionSchema = require('./action').ActionSchema
 
 const Schema = mongoose.Schema
 
+function checkSensor(value) {
+  return value.length > 0
+}
+
 const ProcessSchema = new Schema({
   name: { type: String, required: [true, '[name] field required'] },
+  ownedBy: { type: Number, required: [true, '[ownedBy] field required'] },
   device: {
     id: { type: Number, required: [true, '[device.id] field required'] },
     port: { type: Number, required: [true, '[device.port] field required'] },
   },
-  sensors: [{ type: Number, required: [true, '[sensors] field required'] }],
+  sensors: { type: [Number], validate: [checkSensor, '[sensors] field required'] },
   loadType: { type: String, required: [true, '[loadType] field required'] },
   control: {
     type: { type: String, required: [true, '[control.type] field required'] },
     method: { type: String, required: [true, '[control.method] field required'] },
-    value: { type: String, required: [true, '[control.value] field required'] },
+    value: { type: Number, required: [true, '[control.value] field required'] },
   },
   meta: {
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },
-  action: [ActionSchema],
+  actions: [ActionSchema],
 })
 
 ProcessSchema.method('update', (updates, callback) => {

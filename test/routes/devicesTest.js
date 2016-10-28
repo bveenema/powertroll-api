@@ -14,7 +14,7 @@ chai.use(chaiHttp)
 
 // Parent Block
 describe('/devices', () => {
-  before((done) => { // Empty database before each test
+  before((done) => { // Empty database
     Device.remove({}, () => {
       done()
     })

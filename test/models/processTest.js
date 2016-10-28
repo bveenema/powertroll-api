@@ -11,8 +11,8 @@ describe('Process Model', () => {
   it('should be invalid if any required field is empty', (done) => {
     const p = new Process()
     p.validate((err) => {
-      console.log('err: ', err)
       err.errors.name.message.should.be.eql('[name] field required')
+      err.errors.ownedBy.message.should.be.eql('[ownedBy] field required')
       err.errors['device.id'].message.should.be.eql('[device.id] field required')
       err.errors['device.port'].message.should.be.eql('[device.port] field required')
       err.errors.sensors.message.should.be.eql('[sensors] field required')
