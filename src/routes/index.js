@@ -3,9 +3,11 @@
 const express = require('express')
 const templates = require('./templates')
 const devices = require('./devices')
+const jwtCheck = require('../../config/express.config').jwtCheck
 
 const router = express.Router()
 
+router.use('/apiCheck', jwtCheck)
 
 router.get('/apiCheck', (req, res) => {
   res.send('api is alive')
