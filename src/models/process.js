@@ -30,10 +30,10 @@ const ProcessSchema = new Schema({
   actions: [ActionSchema],
 })
 
-ProcessSchema.method('update', (updates, callback) => {
-  Object.assign(this, updates, { meta: { updatedAt: new Date() } })
-  this.parent().save(callback)
-})
+ProcessSchema.methods.update = function (updates, callback) { //eslint-disable-line
+  Object.assign(this, updates, { meta: { updatedAt: new Date(), createdAt: this.meta.createdAt } })
+  this.save(callback)
+}
 
 const Process = mongoose.model('Process', ProcessSchema)
 

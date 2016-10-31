@@ -102,16 +102,16 @@ describe('/devices', () => {
         firmware: '0.0.0',
       }
       chai.request(server)
-        .post('/devices')
-        .send(d)
-        .end((err, res) => {
-          res.should.have.status(200)
-          res.body.should.be.a('object')
-          res.body.should.have.property('message')
-          res.body.message.should.be.eql('Device validation failed')
-          res.body.errors.ownedBy.message.should.be.eql('Device owner required')
-          done()
-        })
+          .post('/devices')
+          .send(d)
+          .end((err, res) => {
+            res.should.have.status(200)
+            res.body.should.be.a('object')
+            res.body.should.have.property('message')
+            res.body.message.should.be.eql('Device validation failed')
+            res.body.errors.ownedBy.message.should.be.eql('Device owner required')
+            done()
+          })
     })
     it('should POST a Device', (done) => {
       const d = {
