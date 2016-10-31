@@ -170,4 +170,51 @@ describe('/processes', () => {
       })
     })
   })
+
+  // GET /:pID/actions
+  const defaultAction = {
+    name: 'foo',
+    port: 1,
+    action: {
+      type: 'bar',
+      value: 42,
+    },
+    duration: 13,
+  }
+  describe('/GET/:pID/actions', () => {
+    it('should GET all the actions in the process (pID)', (done) => {
+      const process = new Process(Object.assign(defaultProcess, { actions: defaultAction }))
+      process.save((err, proc) => {
+        chai.request(server)
+            .get(`/processes/${proc.id}/actions/${proc.actions[0].id}`)
+            .end((error, res) => {
+              res.should.have.status(200)
+              res.body.should.be.a('array')
+              res.body[0].name.should.be.eql(defaultAction.name)
+            })
+      })
+      done()
+    })
+  })
+
+  // POST /:pID/actions
+  describe('/POST/:pID/actions', () => {
+    it('should create a new action in the process (pID)', (done) => {
+      done()
+    })
+  })
+
+  // PUT /:pID/actions/:aID
+  describe('/PUT/:pID/actions/:aID', () => {
+    it('should update an action (aID)', (done) => {
+      done()
+    })
+  })
+
+  // DELETE /:pID/actions/:aID
+  describe('/DELETE/:pID/actions/:aID', () => {
+    it('should delete an action (aID)', (done) => {
+      done()
+    })
+  })
 })

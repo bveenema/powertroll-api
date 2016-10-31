@@ -96,4 +96,18 @@ processes.put('/:pID', (req, res, next) => {
   })
 })
 
+// GET /:pID/action
+processes.get('/:pID/actions', (req, res, next) => {
+  const pID = req.params.pID
+  Process.findById(pID, (err, doc) => {
+    if (err) return next(err)
+    res.status(200)
+    res.json(doc.actions)
+    return null
+  })
+})
+// POST /:pID/action
+// PUT /:pID/action/:aID
+// DELETE /:pID/action/:aID
+
 module.exports = processes

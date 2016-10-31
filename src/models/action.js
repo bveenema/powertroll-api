@@ -35,8 +35,8 @@ const ActionSchema = new Schema({
   },
 })
 
-ActionSchema.method('update', (updates, callback) => {
-  Object.assign(this, updates, { updatedAt: new Date() })
+ActionSchema.method('update', function (updates, callback) { //eslint-disable-line
+  Object.assign(this, updates, { updatedAt: new Date(), createdAt: this.meta.createdAt })
   this.parent().save(callback)
 })
 
