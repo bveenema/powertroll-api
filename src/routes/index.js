@@ -10,6 +10,7 @@ const router = express.Router()
 router.use('/apiCheck', jwtCheck)
 
 router.get('/apiCheck', (req, res) => {
+  console.log('user: ', req.user)
   res.send('api is alive')
 })
 

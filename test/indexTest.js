@@ -2,6 +2,13 @@
 
 process.env.NODE_ENV = 'test'
 
+const AuthenticationClient = require('auth0').AuthenticationClient
+
+const auth0 = new AuthenticationClient({
+  domain: '{{domain}}.auth0.com',
+  clientId: '{{client}}',
+})
+
 describe('DB Connection', () => {
   before((done) => {
     setTimeout(() => {
