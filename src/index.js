@@ -39,6 +39,10 @@ dataBase.once('open', () => {
 
 // Error Handler
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+  console.log('err: ', err)
+  if (err.code === 'permission_denied') {
+    res.status(401).send('insufficient permissions')
+  }
   res.status(err.status || 500)
   res.json(err)
 })

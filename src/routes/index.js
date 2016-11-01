@@ -4,6 +4,10 @@ const express = require('express')
 const templates = require('./templates')
 const devices = require('./devices')
 const jwtCheck = require('../../config/express.config').jwtCheck
+const guard = require('express-jwt-permissions')({
+  requestProperty: 'user[app_metadata]',
+  permissionsProperty: 'permissions',
+})
 
 const router = express.Router()
 
@@ -14,7 +18,7 @@ router.get('/apiCheck', (req, res) => {
   res.send('api is alive')
 })
 
-router.get('/authCheck', (req, res) => {
+router.get('/authCheck', guard.check('admin'), (req, res) => {
   console.log('user: ', req.user)
   res.send('user verified')
 })
