@@ -2,12 +2,20 @@
 
 process.env.NODE_ENV = 'test'
 
-const AuthenticationClient = require('auth0').AuthenticationClient
+const auth0 = require('../config/express.config').auth0
+const chai = require('chai')
+const chaiHttp = require('chai-http')
+const server = require('../src/index')
 
-const auth0 = new AuthenticationClient({
-  domain: '{{domain}}.auth0.com',
-  clientId: '{{client}}',
-})
+const should = chai.should() //eslint-disable-line
+
+chai.use(chaiHttp)
+
+let JWT = ''
+auth0.database.signIn(server.user)
+              .then((res) => {
+                JWT = res.id_token
+              })
 
 describe('DB Connection', () => {
   before((done) => {
@@ -15,8 +23,15 @@ describe('DB Connection', () => {
       done()
     }, 1000)
   })
-  it('Wait for db to connect', () => {
-    const x = true
-    x.should.be.eql(true)
+  it('Test authenticated route', (done) => {
+    chai.request(server)
+        .get('/authCheck')
+        .set('Authorization', `Bearer ${JWT}`)
+        .end((err, res) => {
+          res.should.have.status(200)
+          done()
+        })
   })
 })
+
+module.exports = JWT

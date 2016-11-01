@@ -7,11 +7,16 @@ const jwtCheck = require('../../config/express.config').jwtCheck
 
 const router = express.Router()
 
-router.use('/apiCheck', jwtCheck)
+router.use('/authCheck', jwtCheck)
 
 router.get('/apiCheck', (req, res) => {
   console.log('user: ', req.user)
   res.send('api is alive')
+})
+
+router.get('/authCheck', (req, res) => {
+  console.log('user: ', req.user)
+  res.send('user verified')
 })
 
 router.use('/templates', templates)
