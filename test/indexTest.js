@@ -2,7 +2,7 @@
 
 process.env.NODE_ENV = 'test'
 
-const auth0 = require('../config/express.config').auth0
+const JWT = require('../config/expressTest.config').JWT
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../src/index')
@@ -10,12 +10,6 @@ const server = require('../src/index')
 const should = chai.should() //eslint-disable-line
 
 chai.use(chaiHttp)
-
-let JWT = ''
-auth0.database.signIn(server.user)
-              .then((res) => {
-                JWT = res.id_token
-              })
 
 describe('DB Connection', () => {
   before((done) => {
@@ -33,5 +27,3 @@ describe('DB Connection', () => {
         })
   })
 })
-
-module.exports = JWT

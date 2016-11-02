@@ -2,6 +2,10 @@
 
 const express = require('express')
 const Template = require('../models').Template
+const guard = require('express-jwt-permissions')({
+  requestProperty: 'user',
+  permissionsProperty: 'app_metadata.permissions',
+})
 
 const templates = express.Router({ mergeParams: true })
 
@@ -18,7 +22,7 @@ templates.param('tID', (req, res, next, id) => {
   })
 })
 
-templates.get('/', (req, res, next) => {
+templates.get('/', guard.check('user'), (req, res, next) => {
   Template.find({})
           .sort({ name: 1 })
           .exec((err, Templates) => {
@@ -38,7 +42,7 @@ templates.get('/', (req, res, next) => {
           })
 })
 
-templates.get('/detailed', (req, res, next) => {
+templates.get('/detailed', guard.check('user'), (req, res, next) => {
   Template.find({})
           .sort({ name: 1 })
           .exec((err, Templates) => {
@@ -49,12 +53,12 @@ templates.get('/detailed', (req, res, next) => {
           })
 })
 
-templates.get('/:tID', (req, res) => {
+templates.get('/:tID', guard.check('user'), (req, res) => {
   res.status(200)
   res.json(req.template)
 })
 
-templates.post('/', (req, res, next) => {
+templates.post('/', guard.check('tech'), (req, res, next) => {
   const template = new Template(req.body)
   template.save((err, temp) => {
     if (err) {
@@ -67,7 +71,7 @@ templates.post('/', (req, res, next) => {
   })
 })
 
-templates.put('/:tID', (req, res, next) => {
+templates.put('/:tID', guard.check('tech'), (req, res, next) => {
   req.template.update(req.body, (err, result) => {
     if (err) return next(err)
     res.json(result)

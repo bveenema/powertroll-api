@@ -7,6 +7,7 @@ const Device = require('../../src/models').Device
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../../src/index')
+const JWT = require('../../config/expressTest.config').JWT
 
 const should = chai.should() //eslint-disable-line
 
@@ -47,6 +48,7 @@ describe('/devices', () => {
     }
     chai.request(server)
         .post('/devices')
+        .set('Authorization', `Bearer ${JWT}`)
         .send(deviceDefault)
         .end(() => {
           done()
@@ -58,6 +60,7 @@ describe('/devices', () => {
     it('should GET all the devices, min-data', (done) => {
       chai.request(server)
         .get('/devices')
+        .set('Authorization', `Bearer ${JWT}`)
         .end((err, res) => {
           res.should.have.status(200)
           res.body.should.be.a('array')
@@ -76,6 +79,7 @@ describe('/devices', () => {
     it('should GET all the devices ownedBy uID', (done) => {
       chai.request(server)
         .get('/devices/1')
+        .set('Authorization', `Bearer ${JWT}`)
         .end((err, res) => {
           res.should.have.status(200)
           res.body.should.be.a('array')
@@ -103,6 +107,7 @@ describe('/devices', () => {
       }
       chai.request(server)
         .post('/devices')
+        .set('Authorization', `Bearer ${JWT}`)
         .send(d)
         .end((err, res) => {
           res.should.have.status(200)
@@ -122,6 +127,7 @@ describe('/devices', () => {
       }
       chai.request(server)
         .post('/devices')
+        .set('Authorization', `Bearer ${JWT}`)
         .send(d)
         .end((err, res) => {
           res.should.have.status(201)
@@ -144,6 +150,7 @@ describe('/devices', () => {
       }
       chai.request(server)
           .post('/devices/1')
+          .set('Authorization', `Bearer ${JWT}`)
           .send(d)
           .end((err, res) => {
             res.should.have.status(200)
@@ -162,6 +169,7 @@ describe('/devices', () => {
       }
       chai.request(server)
         .post('/devices/1')
+        .set('Authorization', `Bearer ${JWT}`)
         .send(d)
         .end((err, res) => {
           res.should.have.status(201)
@@ -181,6 +189,7 @@ describe('/devices', () => {
     it('should get a Device ID', (done) => {
       chai.request(server)
           .get('/devices')
+          .set('Authorization', `Bearer ${JWT}`)
           .end((err, res) => {
             dID = res.body[0].id
             done()
@@ -194,6 +203,7 @@ describe('/devices', () => {
       }
       chai.request(server)
         .put(`/devices/${dID}`)
+        .set('Authorization', `Bearer ${JWT}`)
         .send(d)
         .end((err, res) => {
           res.should.have.status(200)

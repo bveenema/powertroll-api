@@ -5,13 +5,13 @@ const templates = require('./templates')
 const devices = require('./devices')
 const jwtCheck = require('../../config/express.config').jwtCheck
 const guard = require('express-jwt-permissions')({
-  requestProperty: 'user[app_metadata]',
-  permissionsProperty: 'permissions',
+  requestProperty: 'user',
+  permissionsProperty: 'app_metadata.permissions',
 })
 
 const router = express.Router()
 
-router.use('/authCheck', jwtCheck)
+router.use(jwtCheck.unless({ path: ['/apiCheck'] }))
 
 router.get('/apiCheck', (req, res) => {
   console.log('user: ', req.user)
