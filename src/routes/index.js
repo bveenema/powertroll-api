@@ -8,19 +8,23 @@ const guard = require('express-jwt-permissions')({
   requestProperty: 'user',
   permissionsProperty: 'app_metadata.permissions',
 })
+const getID = require('../middleware/getID')
 
 const router = express.Router()
 
 router.use(jwtCheck.unless({ path: ['/apiCheck'] }))
 
 router.get('/apiCheck', (req, res) => {
-  console.log('user: ', req.user)
   res.send('api is alive')
 })
 
 router.get('/authCheck', guard.check('admin'), (req, res) => {
-  console.log('user: ', req.user)
-  res.send('user verified')
+  res.send(`user verified:  ${req.user}`)
+})
+
+router.get('/subCheck', guard.check('admin'), getID, (req, res) => {
+  const id = req.id
+  res.send(`sub: ${id}, typeOf: ${typeof id}`)
 })
 
 router.use('/templates', templates)

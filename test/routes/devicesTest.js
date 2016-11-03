@@ -2,7 +2,6 @@
 
 process.env.NODE_ENV = 'test'
 
-// const mongoose = require('mongoose')
 const Device = require('../../src/models').Device
 const chai = require('chai')
 const chaiHttp = require('chai-http')

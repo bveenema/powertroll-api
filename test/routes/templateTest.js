@@ -23,7 +23,6 @@ describe('/templates', () => {
   // Get Route
   describe('/GET templates', () => {
     it('should GET all the Templates', (done) => {
-      console.log('JWT: ', JWT)
       chai.request(server)
         .get('/templates')
         .set('Authorization', `Bearer ${JWT}`)
@@ -111,6 +110,7 @@ describe('/templates', () => {
       template.save((err, temp) => {
         chai.request(server)
             .put(`/templates/${temp.id}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .send(update)
             .end((error, res) => {
               res.should.have.status(200)
