@@ -11,7 +11,7 @@ const DeviceSchema = new Schema({
     updatedAt: { type: Date, default: Date.now },
   },
   type: { type: String, required: [true, 'Device type required'] },
-  ownedBy: { type: Number, required: [true, 'Device owner required'] },
+  ownedBy: { type: String, required: [true, 'Device owner required'] },
   connectionStatus: {
     online: { type: Boolean },
     lastCommunication: { type: Date },
@@ -35,6 +35,10 @@ const DeviceSchema = new Schema({
 })
 
 DeviceSchema.virtual('sensors.local').get(() => this.sensors.wired.concat(this.sensors.wireless))
+
+DeviceSchema.methods.findByOwner = function (id, callback) { // eslint-disable-line func-names
+  this.model('Device').find({ ownedBy: id }, callback)
+}
 
 const Device = mongoose.model('Device', DeviceSchema)
 

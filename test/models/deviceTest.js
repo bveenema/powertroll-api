@@ -3,6 +3,7 @@
 process.env.NODE_ENV = 'test'
 
 const chai = require('chai')
+const sinon = require('sinon')
 const Device = require('../../src/models').Device
 
 const should = chai.should() //eslint-disable-line
@@ -17,4 +18,15 @@ describe('Device Model', () => {
       done()
     })
   })
+  it('should return docs when findByOwner', sinon.test(function (done) { // eslint-disable-line func-names
+    const expectedDevice = { firmware: 'foo', type: 'foo', ownedBy: '12345' }
+    this.stub(Device, 'find').yields(null, [expectedDevice])
+    const d = new Device(expectedDevice)
+
+    d.findByOwner('12345', (err, docs) => {
+      docs.should.be.a('array')
+      docs[0].should.be.eql(expectedDevice)
+      done()
+    })
+  }))
 })
