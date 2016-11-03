@@ -55,10 +55,10 @@ describe('/devices', () => {
   })
 
   // /GET - All devices by all users, min-data
-  describe('/GET', () => {
+  describe('/GET/all', () => {
     it('should GET all the devices, min-data', (done) => {
       chai.request(server)
-        .get('/devices')
+        .get('/devices/all')
         .set('Authorization', `Bearer ${JWT}`)
         .end((err, res) => {
           res.should.have.status(200)
@@ -74,10 +74,10 @@ describe('/devices', () => {
   })
 
   // /GET/:uID - All devices ownedBy uID
-  describe('/GET/:uID', () => {
-    it('should GET all the devices ownedBy uID', (done) => {
+  describe('/GET/', () => {
+    it('should GET all devices owned by the user', (done) => {
       chai.request(server)
-        .get('/devices/1')
+        .get('/devices')
         .set('Authorization', `Bearer ${JWT}`)
         .end((err, res) => {
           res.should.have.status(200)

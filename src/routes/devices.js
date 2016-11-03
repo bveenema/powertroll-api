@@ -2,30 +2,16 @@
 
 const express = require('express')
 const Device = require('../models').Device
+const guard = require('express-jwt-permissions')({
+  requestProperty: 'user',
+  permissionsProperty: 'app_metadata.permissions',
+})
+const getID = require('../middleware/getID')
 
 const devices = express.Router({ mergeParams: true })
 
-// User ID Parameter Handler
-devices.param('uID', (req, res, next, id) => {
-  if (req.method === 'POST') {
-    req.body.ownedBy = id
-    return next()
-  }
-  Device.find({ ownedBy: id }, (err, doc) => {
-    if (err) return next(err)
-    if (!doc) {
-      const error = new Error('No devices found for user')
-      error.status = 404
-      return next(error)
-    }
-    req.device = doc
-    return next()
-  })
-  return null
-})
-
-// /GET - All devices by all users, min-data
-devices.get('/', (req, res, next) => {
+// /GET/all - All devices by all users, min-data
+devices.get('/all', guard.check('admin'), (req, res, next) => {
   Device.find({})
         .sort({ name: 1 })
         .exec((err, Devices) => {
@@ -48,10 +34,14 @@ devices.get('/', (req, res, next) => {
         })
 })
 
-// /GET/:uID - All devices ownedBy uID
-devices.get('/:uID', (req, res) => {
-  res.status = 200
-  res.json(req.device)
+// /GET - All devices ownedBy uID
+devices.get('/', guard.check('user'), getID, (req, res, next) => {
+  Device.findByOwner(req.id, (err, docs) => {
+    if (err) return next(err)
+    res.status(200)
+    res.json(docs)
+    return null
+  })
 })
 
 // /POST - Generic Post route, not for users
