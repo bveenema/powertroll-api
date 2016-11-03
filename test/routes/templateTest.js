@@ -102,4 +102,23 @@ describe('/templates', () => {
       })
     })
   })
+
+  // /PUT/:dID - Update device with id tID
+  describe('/PUT/:tID', () => {
+    it('should update the Template w/ tID', (done) => {
+      const template = new Template({ name: 'newish template' })
+      const update = { name: 'fudge' }
+      template.save((err, temp) => {
+        chai.request(server)
+            .put(`/templates/${temp.id}`)
+            .send(update)
+            .end((error, res) => {
+              res.should.have.status(200)
+              res.body.should.be.a('object')
+              res.body.name.should.be.eql('fudge')
+              done()
+            })
+      })
+    })
+  })
 })

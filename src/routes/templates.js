@@ -9,18 +9,6 @@ const guard = require('express-jwt-permissions')({
 
 const templates = express.Router({ mergeParams: true })
 
-templates.param('tID', (req, res, next, id) => {
-  Template.findById(id, (err, doc) => {
-    if (err) return next(err)
-    if (!doc) {
-      const error = new Error('Template Not Found')
-      error.status = 404
-      return next(error)
-    }
-    req.template = doc
-    return next()
-  })
-})
 
 templates.get('/', guard.check('user'), (req, res, next) => {
   Template.find({})
@@ -53,9 +41,25 @@ templates.get('/detailed', guard.check('user'), (req, res, next) => {
           })
 })
 
+<<<<<<< HEAD
 templates.get('/:tID', guard.check('user'), (req, res) => {
   res.status(200)
   res.json(req.template)
+=======
+templates.get('/:tID', (req, res, next) => {
+  const tID = req.params.tID
+  Template.findById(tID, (err, doc) => {
+    if (err) return next(err)
+    if (!doc) {
+      const error = new Error('Template Not Found')
+      error.status = 404
+      return next(error)
+    }
+    res.status(200)
+    res.json(doc)
+    return null
+  })
+>>>>>>> develop
 })
 
 templates.post('/', guard.check('tech'), (req, res, next) => {
@@ -71,9 +75,16 @@ templates.post('/', guard.check('tech'), (req, res, next) => {
   })
 })
 
+<<<<<<< HEAD
 templates.put('/:tID', guard.check('tech'), (req, res, next) => {
   req.template.update(req.body, (err, result) => {
+=======
+templates.put('/:tID', (req, res, next) => {
+  const tID = req.params.tID
+  Template.findByIdAndUpdate(tID, req.body, { new: true }, (err, result) => {
+>>>>>>> develop
     if (err) return next(err)
+    res.status(200)
     res.json(result)
     return null
   })
