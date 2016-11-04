@@ -73,12 +73,14 @@ devices.post('/', guard.check('user'), getID, (req, res, next) => {
 })
 
 // /PUT/:dID - Update device with id tID
-devices.put('/:dID', guard.check('user'), (req, res, next) => {
+devices.put('/:dID', guard.check('user'), getID, (req, res, next) => {
   const dID = req.params.dID
-  Device.findByIdAndUpdate(dID, req.body, { new: true }, (err, result) => {
+  Device.findByIdCheckOwner(dID, req.id, (err, doc) => {
     if (err) return next(err)
-    res.status(200)
-    res.json(result)
+    doc.update(req.body, (error, result) => {
+      res.status(200)
+      res.json(result)
+    })
     return null
   })
 })
