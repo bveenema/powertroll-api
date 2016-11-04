@@ -2,11 +2,15 @@
 
 const express = require('express')
 const Template = require('../models').Template
+const guard = require('express-jwt-permissions')({
+  requestProperty: 'user',
+  permissionsProperty: 'app_metadata.permissions',
+})
 
 const templates = express.Router({ mergeParams: true })
 
 
-templates.get('/', (req, res, next) => {
+templates.get('/', guard.check('user'), (req, res, next) => {
   Template.find({})
           .sort({ name: 1 })
           .exec((err, Templates) => {
@@ -26,7 +30,7 @@ templates.get('/', (req, res, next) => {
           })
 })
 
-templates.get('/detailed', (req, res, next) => {
+templates.get('/detailed', guard.check('user'), (req, res, next) => {
   Template.find({})
           .sort({ name: 1 })
           .exec((err, Templates) => {
@@ -36,6 +40,7 @@ templates.get('/detailed', (req, res, next) => {
             return null
           })
 })
+
 
 templates.get('/:tID', (req, res, next) => {
   const tID = req.params.tID
@@ -52,7 +57,7 @@ templates.get('/:tID', (req, res, next) => {
   })
 })
 
-templates.post('/', (req, res, next) => {
+templates.post('/', guard.check('tech'), (req, res, next) => {
   const template = new Template(req.body)
   template.save((err, temp) => {
     if (err) {

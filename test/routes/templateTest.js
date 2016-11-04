@@ -2,11 +2,11 @@
 
 process.env.NODE_ENV = 'test'
 
-// const mongoose = require('mongoose')
 const Template = require('../../src/models').Template
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../../src/index')
+const JWT = require('../../config/expressTest.config').JWT
 
 const should = chai.should() //eslint-disable-line
 
@@ -25,6 +25,7 @@ describe('/templates', () => {
     it('should GET all the Templates', (done) => {
       chai.request(server)
         .get('/templates')
+        .set('Authorization', `Bearer ${JWT}`)
         .end((err, res) => {
           res.should.have.status(200)
           res.body.should.be.a('array')
@@ -47,6 +48,7 @@ describe('/templates', () => {
       }
       chai.request(server)
           .post('/templates')
+          .set('Authorization', `Bearer ${JWT}`)
           .send(template)
           .end((err, res) => {
             res.should.have.status(200)
@@ -68,6 +70,7 @@ describe('/templates', () => {
       }
       chai.request(server)
         .post('/templates')
+        .set('Authorization', `Bearer ${JWT}`)
         .send(template)
         .end((err, res) => {
           res.should.have.status(201)
@@ -87,6 +90,7 @@ describe('/templates', () => {
       template.save((err, temp) => {
         chai.request(server)
             .get(`/templates/${temp.id}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(200)
               res.body.should.be.a('object')
@@ -106,6 +110,7 @@ describe('/templates', () => {
       template.save((err, temp) => {
         chai.request(server)
             .put(`/templates/${temp.id}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .send(update)
             .end((error, res) => {
               res.should.have.status(200)
