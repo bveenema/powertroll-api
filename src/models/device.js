@@ -1,6 +1,7 @@
 'use strict'
 
 const mongoose = require('mongoose')
+const IdError = require('../errors/idError')
 
 const Schema = mongoose.Schema
 
@@ -36,8 +37,24 @@ const DeviceSchema = new Schema({
 
 DeviceSchema.virtual('sensors.local').get(() => this.sensors.wired.concat(this.sensors.wireless))
 
+DeviceSchema.methods.update = function (updates, callback) { // eslint-disable-line func-names
+  Object.assign(this, updates, { meta: { updatedAt: new Date(), createdAt: this.meta.createdAt } })
+  this.save(callback)
+}
+
 DeviceSchema.statics.findByOwner = function (id, callback) { // eslint-disable-line func-names
   this.find({ ownedBy: id }, callback)
+}
+
+DeviceSchema.statics.findByIdCheckOwner = function (id, owner, callback) { // eslint-disable-line func-names, max-len
+  this.findById(id, (err, doc) => {
+    if (doc.ownedBy !== owner) {
+      return callback(new IdError('nonmatching_user_id', {
+        message: 'user id does not match process owner. Invalid Request',
+      }))
+    }
+    return callback(err, doc)
+  })
 }
 
 const Device = mongoose.model('Device', DeviceSchema)

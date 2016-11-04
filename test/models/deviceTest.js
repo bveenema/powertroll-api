@@ -30,4 +30,16 @@ describe('Device Model', () => {
       })
     })
   }))
+  it('should return a doc and check owner (findByIdCheckOwner)', sinon.test(function (done) { // eslint-disable-line func-names
+    const expectedDevice = { firmware: 'foo', type: 'foo', ownedBy: '12345', id: '54321' }
+    this.stub(Device, 'findById').yields(null, expectedDevice)
+    const d = new Device(expectedDevice)
+    d.save(() => {
+      Device.findByIdCheckOwner(expectedDevice.id, expectedDevice.ownedBy, (error, document) => {
+        document.should.be.a('object')
+        document.should.be.eql(expectedDevice)
+        done()
+      })
+    })
+  }))
 })
