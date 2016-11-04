@@ -8,6 +8,7 @@ const chai = require('chai')
 const chaiHttp = require('chai-http')
 const moment = require('moment')
 const server = require('../../src/index')
+const JWT = require('../../config/expressTest.config').JWT
 
 const should = chai.should() //eslint-disable-line
 
@@ -36,14 +37,15 @@ describe('/processes', () => {
     },
   }
 
-  // GET / -  Returns all Processes in the database, min-data
+  // GET /all -  Returns all Processes in the database, min-data
   //          [id, name, {control}, numActions, updatedAt]
-  describe('/GET /', () => {
+  describe('/GET /all', () => {
     it('should GET all Processes in the database', (done) => {
       const process = new Process(defaultProcess)
       process.save(() => {
         chai.request(server)
-            .get('/processes')
+            .get('/processes/all')
+            .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(200)
               res.body.should.be.a('array')
@@ -54,13 +56,14 @@ describe('/processes', () => {
     })
   })
 
-  // GET /process-:pID - Returns the Process specified by pID with all fields
-  describe('/GET/process-:pID', () => {
+  // GET /:pID - Returns the Process specified by pID with all fields
+  describe('/GET/:pID', () => {
     it('should GET the Process specidified by pID', (done) => {
       const process = new Process(defaultProcess)
       process.save((err, proc) => {
         chai.request(server)
-            .get(`/processes/process-${proc.id}`)
+            .get(`/processes/${proc.id}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(200)
               res.body.should.be.a('object')
@@ -72,14 +75,15 @@ describe('/processes', () => {
   })
 
   // GET /:uID - Returns the Processes owned by uID with all fields
-  describe('/GET/:uID', () => {
+  describe('/GET', () => {
     it('should GET all Processes specified by uID', (done) => {
       const process1 = new Process(defaultProcess)
       const process2 = new Process(Object.assign({}, defaultProcess, { name: 'floor' }))
-      process1.save((err, proc1) => {
+      process1.save(() => {
         process2.save(() => {
           chai.request(server)
-              .get(`/processes/${proc1.ownedBy}`)
+              .get('/processes')
+              .set('Authorization', `Bearer ${JWT}`)
               .end((error, res) => {
                 res.should.have.status(200)
                 res.body.should.be.a('array')
@@ -92,12 +96,13 @@ describe('/processes', () => {
     })
   })
 
-  // POST / - Creates a Process, not for general use (use POST /:uID)
-  describe('/POST', () => {
+  // POST /all - Creates a Process, not for general use (use POST /:uID)
+  describe('/POST/all', () => {
     it('should POST a Process', (done) => {
       const currentTime = new Date()
       chai.request(server)
-          .post('/processes')
+          .post('/processes/all')
+          .set('Authorization', `Bearer ${JWT}`)
           .send(defaultProcess)
           .end((err, res) => {
             const createdAt = new Date(res.body.meta.createdAt)
@@ -112,18 +117,19 @@ describe('/processes', () => {
   })
 
   // POST /:uID - Creates a Process ownedBy uID
-  describe('/POST/:uID', () => {
+  describe('/POST', () => {
     it('should POST a process ownedBy uID', (done) => {
       const currentTime = new Date()
       chai.request(server)
-          .post('/processes/2')
+          .post('/processes')
+          .set('Authorization', `Bearer ${JWT}`)
           .send(defaultProcess)
           .end((err, res) => {
             const createdAt = new Date(res.body.meta.createdAt)
 
             res.should.have.status(201)
             createdAt.should.be.at.least(currentTime)
-            res.body.ownedBy.should.be.eql(2)
+            res.body.ownedBy.should.be.eql('12345')
             done()
           })
     })
@@ -137,6 +143,7 @@ describe('/processes', () => {
       process.save((err, proc) => {
         chai.request(server)
             .put(`/processes/${proc.id}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .send(update)
             .end((error, res) => {
               res.should.have.status(200)
@@ -155,6 +162,7 @@ describe('/processes', () => {
         setTimeout(() => {
           chai.request(server)
               .put(`/processes/${proc.id}`)
+              .set('Authorization', `Bearer ${JWT}`)
               .send(update)
               .end((error, res) => {
                 const updatedAt = moment(res.body.meta.updatedAt).valueOf()
@@ -187,13 +195,14 @@ describe('/processes', () => {
       process.save((err, proc) => {
         chai.request(server)
             .get(`/processes/${proc.id}/actions/${proc.actions[0].id}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(200)
               res.body.should.be.a('array')
               res.body[0].name.should.be.eql(defaultAction.name)
+              done()
             })
       })
-      done()
     })
   })
 

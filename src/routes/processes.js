@@ -2,11 +2,16 @@
 
 const express = require('express')
 const Process = require('../models').Process
+const guard = require('express-jwt-permissions')({
+  requestProperty: 'user',
+  permissionsProperty: 'app_metadata.permissions',
+})
+const getID = require('../middleware/getID')
 
 const processes = express.Router({ mergeParams: true })
 
-// /GET - All processes by all users, min-data
-processes.get('/', (req, res, next) => {
+// /GET/all - All processes by all users, min-data
+processes.get('/all', guard.check('admin'), (req, res, next) => {
   Process.find({})
         .sort({ name: 1 })
         .exec((err, Processes) => {
@@ -28,8 +33,8 @@ processes.get('/', (req, res, next) => {
         })
 })
 
-// GET /process-:pID - Returns the Process specified by pID with all fields
-processes.get('/process-:pID', (req, res, next) => {
+// GET /:pID - Returns the Process specified by pID with all fields
+processes.get('/:pID', guard.check('user'), getID, (req, res, next) => {
   const pID = req.params.pID
   Process.findById(pID, (err, result) => {
     if (err) return next(err)
@@ -39,10 +44,9 @@ processes.get('/process-:pID', (req, res, next) => {
   })
 })
 
-// GET /:uID - Returns the Processes owned by uID with all fields
-processes.get('/:uID', (req, res, next) => {
-  const uID = req.params.uID
-  Process.find({ ownedBy: uID })
+// GET / - Returns the Processes owned by the user with all fields
+processes.get('/', guard.check('user'), getID, (req, res, next) => {
+  Process.findByOwner(req.id)
           .sort({ name: -1 })
           .exec((err, Processes) => {
             if (err) return next(err)
@@ -53,7 +57,7 @@ processes.get('/:uID', (req, res, next) => {
 })
 
 // POST / - Creates a Process, not for general use (use POST /:uID)
-processes.post('/', (req, res, next) => {
+processes.post('/all', guard.check('tech'), (req, res, next) => {
   const process = new Process(req.body)
   process.save((err, result) => {
     if (err) {
@@ -67,7 +71,7 @@ processes.post('/', (req, res, next) => {
 })
 
 // POST /:uID - Creates a Process ownedBy uID
-processes.post('/:uID', (req, res, next) => {
+processes.post('/', guard.check('user'), getID, (req, res, next) => {
   req.body.ownedBy = req.params.uID
   const process = new Process(req.body)
   process.save((err, result) => {
@@ -82,7 +86,7 @@ processes.post('/:uID', (req, res, next) => {
 })
 
 // PUT /:pID - Updates a Process specified by pID
-processes.put('/:pID', (req, res, next) => {
+processes.put('/:pID', guard.check('user'), getID, (req, res, next) => {
   const pID = req.params.pID
   Process.findById(pID, (err, doc) => {
     if (err) return next(err)
@@ -97,7 +101,7 @@ processes.put('/:pID', (req, res, next) => {
 })
 
 // GET /:pID/action
-processes.get('/:pID/actions', (req, res, next) => {
+processes.get('/:pID/actions', guard.check('user'), getID, (req, res, next) => {
   const pID = req.params.pID
   Process.findById(pID, (err, doc) => {
     if (err) return next(err)

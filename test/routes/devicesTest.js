@@ -90,7 +90,7 @@ describe('/devices', () => {
           res.body.should.be.a('object')
           res.body.should.have.property('message')
           res.body.message.should.be.eql('Device validation failed')
-          res.body.errors.ownedBy.message.should.be.eql('Device owner required')
+          res.body.errors.ownedBy.message.should.be.eql('owner required')
           done()
         })
     })
