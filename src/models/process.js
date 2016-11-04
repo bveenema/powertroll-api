@@ -1,6 +1,8 @@
 'use strict'
 
 const mongoose = require('mongoose')
+const meta = require('./plugins/meta')
+const owner = require('./plugins/owner')
 const ActionSchema = require('./action').ActionSchema
 
 const Schema = mongoose.Schema
@@ -23,17 +25,11 @@ const ProcessSchema = new Schema({
     method: { type: String, required: [true, '[control.method] field required'] },
     value: { type: Number, required: [true, '[control.value] field required'] },
   },
-  meta: {
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-  },
   actions: [ActionSchema],
 })
 
-ProcessSchema.methods.update = function (updates, callback) { //eslint-disable-line
-  Object.assign(this, updates, { meta: { updatedAt: new Date(), createdAt: this.meta.createdAt } })
-  this.save(callback)
-}
+ProcessSchema.plugin(meta)
+ProcessSchema.plugin(owner)
 
 const Process = mongoose.model('Process', ProcessSchema)
 

@@ -28,12 +28,4 @@ describe('Action Model', () => {
       done()
     })
   })
-  // it('should change the [meta.updatedAt] field to the current time when updated', sinon.test((done) => {
-  //   const a = new Action()
-  //   const callback = sinon.stub().returns(42)
-  //   const proxy = a.update({}, callback)
-  //
-  //   sinon.assert.equals(proxy(), 42)
-  //   done()
-  // }))
 })

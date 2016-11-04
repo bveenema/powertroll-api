@@ -12,7 +12,6 @@ describe('Process Model', () => {
     const p = new Process()
     p.validate((err) => {
       err.errors.name.message.should.be.eql('[name] field required')
-      err.errors.ownedBy.message.should.be.eql('[ownedBy] field required')
       err.errors['device.id'].message.should.be.eql('[device.id] field required')
       err.errors['device.port'].message.should.be.eql('[device.port] field required')
       err.errors.sensors.message.should.be.eql('[sensors] field required')
