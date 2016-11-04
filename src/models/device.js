@@ -36,8 +36,8 @@ const DeviceSchema = new Schema({
 
 DeviceSchema.virtual('sensors.local').get(() => this.sensors.wired.concat(this.sensors.wireless))
 
-DeviceSchema.methods.findByOwner = function (id, callback) { // eslint-disable-line func-names
-  this.model('Device').find({ ownedBy: id }, callback)
+DeviceSchema.statics.findByOwner = function (id, callback) { // eslint-disable-line func-names
+  this.find({ ownedBy: id }, callback)
 }
 
 const Device = mongoose.model('Device', DeviceSchema)

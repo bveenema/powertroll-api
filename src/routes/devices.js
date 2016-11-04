@@ -44,8 +44,8 @@ devices.get('/', guard.check('user'), getID, (req, res, next) => {
   })
 })
 
-// /POST - Generic Post route, not for users
-devices.post('/', (req, res, next) => {
+// /POST/all - Generic Post route, not for users
+devices.post('/all', guard.check('admin'), (req, res, next) => {
   const device = new Device(req.body)
   device.save((err, d) => {
     if (err) {
@@ -58,9 +58,9 @@ devices.post('/', (req, res, next) => {
   })
 })
 
-// /POST/:uID - Create device ownedBy uID
-devices.post('/:uID', (req, res, next) => {
-  const device = new Device(req.body)
+// /POST/ - Create device ownedBy user id
+devices.post('/', guard.check('user'), getID, (req, res, next) => {
+  const device = new Device(Object.assign({}, req.body, { ownedBy: req.id }))
   device.save((err, d) => {
     if (err) {
       if (err.message === 'Device validation failed') err.status = 200
@@ -73,7 +73,7 @@ devices.post('/:uID', (req, res, next) => {
 })
 
 // /PUT/:dID - Update device with id tID
-devices.put('/:dID', (req, res, next) => {
+devices.put('/:dID', guard.check('user'), (req, res, next) => {
   const dID = req.params.dID
   Device.findByIdAndUpdate(dID, req.body, { new: true }, (err, result) => {
     if (err) return next(err)

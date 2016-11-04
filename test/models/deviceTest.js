@@ -22,11 +22,12 @@ describe('Device Model', () => {
     const expectedDevice = { firmware: 'foo', type: 'foo', ownedBy: '12345' }
     this.stub(Device, 'find').yields(null, [expectedDevice])
     const d = new Device(expectedDevice)
-
-    d.findByOwner('12345', (err, docs) => {
-      docs.should.be.a('array')
-      docs[0].should.be.eql(expectedDevice)
-      done()
+    d.save(() => {
+      Device.findByOwner('12345', (err, docs) => {
+        docs.should.be.a('array')
+        docs[0].should.be.eql(expectedDevice)
+        done()
+      })
     })
   }))
 })
