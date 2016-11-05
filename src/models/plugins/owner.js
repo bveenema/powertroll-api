@@ -23,4 +23,9 @@ module.exports = exports = function owner(schema) {
       return callback(err, doc)
     })
   }
+
+  schema.method('saveOwner', function (updates, id, callback) { // eslint-disable-line func-names
+    Object.assign(this, updates, { ownedBy: id })
+    this.save(callback)
+  })
 }

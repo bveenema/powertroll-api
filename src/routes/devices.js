@@ -36,7 +36,7 @@ devices.get('/all', guard.check('admin'), (req, res, next) => {
 
 // /GET - All devices ownedBy uID
 devices.get('/', guard.check('user'), getID, (req, res, next) => {
-  Device.findByOwner(req.id, (err, docs) => {
+  Device.findByOwner(req.id, { name: -1 }, (err, docs) => {
     if (err) return next(err)
     res.status(200)
     res.json(docs)
@@ -60,8 +60,8 @@ devices.post('/all', guard.check('admin'), (req, res, next) => {
 
 // /POST/ - Create device ownedBy user id
 devices.post('/', guard.check('user'), getID, (req, res, next) => {
-  const device = new Device(Object.assign({}, req.body, { ownedBy: req.id }))
-  device.save((err, d) => {
+  const device = new Device()
+  device.saveOwner(req.body, req.id, (err, d) => {
     if (err) {
       if (err.message === 'Device validation failed') err.status = 200
       return next(err)
