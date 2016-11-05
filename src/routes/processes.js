@@ -10,6 +10,25 @@ const getID = require('../middleware/getID')
 
 const processes = express.Router({ mergeParams: true })
 
+processes.param('pID', (req, res, next, pID) => {
+  getID(req, res)
+  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
+    if (err) return next(err)
+    req.process = doc
+    return next()
+  })
+})
+
+processes.param('aID', (req, res, next, aID) => {
+  req.action = req.process.actions.id(aID)
+  if (!req.action) {
+    const err = new Error('Not Found')
+    err.status = 404
+    return next(err)
+  }
+  return next()
+})
+
 // /GET/all - All processes by all users, min-data
 processes.get('/all', guard.check('admin'), (req, res, next) => {
   Process.find({})
@@ -33,14 +52,10 @@ processes.get('/all', guard.check('admin'), (req, res, next) => {
 })
 
 // GET /:pID - Returns the Process specified by pID with all fields
-processes.get('/:pID', guard.check('user'), getID, (req, res, next) => {
-  const pID = req.params.pID
-  Process.findById(pID, (err, result) => {
-    if (err) return next(err)
-    res.status(200)
-    res.json(result)
-    return null
-  })
+processes.get('/:pID', guard.check('user'), (req, res) => {
+  res.status(200)
+  res.json(req.process)
+  return null
 })
 
 // GET / - Returns the Processes owned by the user with all fields
@@ -67,7 +82,7 @@ processes.post('/all', guard.check('tech'), (req, res, next) => {
   })
 })
 
-// POST /:uID - Creates a Process ownedBy uID
+// POST / - Creates a Process ownedBy uID
 processes.post('/', guard.check('user'), getID, (req, res, next) => {
   const process = new Process()
   process.saveOwner(req.body, req.id, (err, result) => {
@@ -82,85 +97,58 @@ processes.post('/', guard.check('user'), getID, (req, res, next) => {
 })
 
 // PUT /:pID - Updates a Process specified by pID
-processes.put('/:pID', guard.check('user'), getID, (req, res, next) => {
-  const pID = req.params.pID
-  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
+processes.put('/:pID', guard.check('user'), (req, res, next) => {
+  req.process.update(req.body, (err, result) => {
     if (err) return next(err)
-    doc.update(req.body, (error, result) => {
-      if (err) return next(err)
-      res.status(200)
-      res.json(result)
-      return null
-    })
+    res.status(200)
+    res.json(result)
     return null
   })
 })
 
 // GET /:pID/action
-processes.get('/:pID/actions', guard.check('user'), getID, (req, res, next) => {
-  const pID = req.params.pID
-  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
-    if (err) return next(err)
-    res.status(200)
-    res.json(doc.actions)
-    return null
-  })
+processes.get('/:pID/actions', guard.check('user'), (req, res) => {
+  res.status(200)
+  res.json(req.process.actions)
+  return null
 })
 
 // POST /:pID/action
-processes.post('/:pID/actions', guard.check('user'), getID, (req, res, next) => {
-  const pID = req.params.pID
-  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
-    if (err) return next(err)
-    doc.actions.push(req.body)
-    doc.save((error, result) => {
-      if (err) {
-        if (err.message === 'Device validation failed') err.status = 200
-        return next(err)
-      }
-      res.status(201)
-      res.json(result.actions)
-      return null
-    })
+processes.post('/:pID/actions', guard.check('user'), (req, res, next) => {
+  req.process.actions.push(req.body)
+  req.process.save((err, result) => {
+    if (err) {
+      if (err.message === 'Device validation failed') err.status = 200
+      return next(err)
+    }
+    res.status(201)
+    res.json(result.actions)
     return null
   })
 })
 
 // PUT /:pID/action/:aID
-processes.put('/:pID/actions/:aID', guard.check('user'), getID, (req, res, next) => {
-  const pID = req.params.pID
-  const aID = req.params.aID
-  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
-    if (err) return next(err)
-    const action = doc.actions.id(aID)
-    action.update(req.body, (error, result) => {
-      if (err) {
-        if (err.message === 'Device validation failed') err.status = 200
-        return next(err)
-      }
-      res.status(200)
-      res.json(result.actions)
-      return null
-    })
+processes.put('/:pID/actions/:aID', guard.check('user'), (req, res, next) => {
+  req.action.update(req.body, (err, result) => {
+    if (err) {
+      if (err.message === 'Device validation failed') err.status = 200
+      return next(err)
+    }
+    res.status(200)
+    res.json(result.actions)
     return null
   })
 })
 
 // DELETE /:pID/action/:aID
 processes.delete('/:pID/actions/:aID', guard.check('user'), getID, (req, res, next) => {
-  const pID = req.params.pID
-  const aID = req.params.aID
-  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
-    if (err) return next(err)
-    const action = doc.actions.id(aID)
-    action.remove(() => {
-      doc.update(null, (e, result) => {
-        res.status(200)
-        res.json(result)
-        return null
-      })
+  req.action.remove(() => {
+    req.process.update(null, (err, result) => {
+      if (err) return next(err)
+      res.status(200)
+      res.json(result)
+      return null
     })
-    return null
   })
 })
 
