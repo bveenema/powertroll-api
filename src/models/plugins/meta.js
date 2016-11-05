@@ -14,7 +14,7 @@ module.exports = exports = function metaPlugin(schema, isChild) {
       updates,
       { meta: { updatedAt: new Date(), createdAt: this.meta.createdAt } }
     )
-    if (isChild) this.parent.save(callback)
+    if (isChild) this.parent().save(callback)
     else this.save(callback)
   })
 }
