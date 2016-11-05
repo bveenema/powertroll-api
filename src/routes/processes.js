@@ -18,7 +18,6 @@ processes.get('/all', guard.check('admin'), (req, res, next) => {
           if (err) return next(err)
           const ProcessesSimplified = Processes.map((process) => {
             const returnVal = {
-              // [id, name, {control}, numActions, updatedAt]
               id: process.id,
               name: process.name,
               control: process.control,
@@ -46,14 +45,12 @@ processes.get('/:pID', guard.check('user'), getID, (req, res, next) => {
 
 // GET / - Returns the Processes owned by the user with all fields
 processes.get('/', guard.check('user'), getID, (req, res, next) => {
-  Process.findByOwner(req.id)
-          .sort({ name: -1 })
-          .exec((err, Processes) => {
-            if (err) return next(err)
-            res.status(200)
-            res.json(Processes)
-            return null
-          })
+  Process.findByOwner(req.id, { name: -1 }, (err, Processes) => {
+    if (err) return next(err)
+    res.status(200)
+    res.json(Processes)
+    return null
+  })
 })
 
 // POST / - Creates a Process, not for general use (use POST /:uID)
@@ -72,9 +69,8 @@ processes.post('/all', guard.check('tech'), (req, res, next) => {
 
 // POST /:uID - Creates a Process ownedBy uID
 processes.post('/', guard.check('user'), getID, (req, res, next) => {
-  req.body.ownedBy = req.params.uID
-  const process = new Process(req.body)
-  process.save((err, result) => {
+  const process = new Process()
+  process.saveOwner(req.body, req.id, (err, result) => {
     if (err) {
       if (err.message === 'Device validation failed') err.status = 200
       return next(err)
@@ -88,7 +84,7 @@ processes.post('/', guard.check('user'), getID, (req, res, next) => {
 // PUT /:pID - Updates a Process specified by pID
 processes.put('/:pID', guard.check('user'), getID, (req, res, next) => {
   const pID = req.params.pID
-  Process.findById(pID, (err, doc) => {
+  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
     if (err) return next(err)
     doc.update(req.body, (error, result) => {
       if (err) return next(err)
@@ -103,15 +99,69 @@ processes.put('/:pID', guard.check('user'), getID, (req, res, next) => {
 // GET /:pID/action
 processes.get('/:pID/actions', guard.check('user'), getID, (req, res, next) => {
   const pID = req.params.pID
-  Process.findById(pID, (err, doc) => {
+  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
     if (err) return next(err)
     res.status(200)
     res.json(doc.actions)
     return null
   })
 })
+
 // POST /:pID/action
+processes.post('/:pID/actions', guard.check('user'), getID, (req, res, next) => {
+  const pID = req.params.pID
+  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
+    if (err) return next(err)
+    doc.actions.push(req.body)
+    doc.save((error, result) => {
+      if (err) {
+        if (err.message === 'Device validation failed') err.status = 200
+        return next(err)
+      }
+      res.status(201)
+      res.json(result.actions)
+      return null
+    })
+    return null
+  })
+})
+
 // PUT /:pID/action/:aID
+processes.put('/:pID/actions/:aID', guard.check('user'), getID, (req, res, next) => {
+  const pID = req.params.pID
+  const aID = req.params.aID
+  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
+    if (err) return next(err)
+    const action = doc.actions.id(aID)
+    action.update(req.body, (error, result) => {
+      if (err) {
+        if (err.message === 'Device validation failed') err.status = 200
+        return next(err)
+      }
+      res.status(200)
+      res.json(result.actions)
+      return null
+    })
+    return null
+  })
+})
+
 // DELETE /:pID/action/:aID
+processes.delete('/:pID/actions/:aID', guard.check('user'), getID, (req, res, next) => {
+  const pID = req.params.pID
+  const aID = req.params.aID
+  Process.findByIdCheckOwner(pID, req.id, (err, doc) => {
+    if (err) return next(err)
+    const action = doc.actions.id(aID)
+    action.remove(() => {
+      doc.update(null, (e, result) => {
+        res.status(200)
+        res.json(result)
+        return null
+      })
+    })
+    return null
+  })
+})
 
 module.exports = processes

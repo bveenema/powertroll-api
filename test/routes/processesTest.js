@@ -23,7 +23,7 @@ describe('/processes', () => {
   })
   const defaultProcess = {
     name: 'foo',
-    ownedBy: 1,
+    ownedBy: '12345',
     device: {
       id: 1,
       port: 1,
@@ -74,7 +74,7 @@ describe('/processes', () => {
     })
   })
 
-  // GET /:uID - Returns the Processes owned by uID with all fields
+  // GET / - Returns the Processes owned by uID with all fields
   describe('/GET', () => {
     it('should GET all Processes specified by uID', (done) => {
       const process1 = new Process(defaultProcess)
@@ -194,7 +194,7 @@ describe('/processes', () => {
       const process = new Process(Object.assign(defaultProcess, { actions: defaultAction }))
       process.save((err, proc) => {
         chai.request(server)
-            .get(`/processes/${proc.id}/actions/${proc.actions[0].id}`)
+            .get(`/processes/${proc.id}/actions`)
             .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(200)
@@ -209,21 +209,58 @@ describe('/processes', () => {
   // POST /:pID/actions
   describe('/POST/:pID/actions', () => {
     it('should create a new action in the process (pID)', (done) => {
-      done()
+      const process = new Process(defaultProcess)
+      process.save((err, proc) => {
+        chai.request(server)
+            .post(`/processes/${proc.id}/actions`)
+            .set('Authorization', `Bearer ${JWT}`)
+            .send(defaultAction)
+            .end((error, res) => {
+              res.should.have.status(201)
+              res.body.should.be.a('array')
+              res.body[0].name.should.be.eql(defaultAction.name)
+              done()
+            })
+      })
     })
   })
 
   // PUT /:pID/actions/:aID
   describe('/PUT/:pID/actions/:aID', () => {
     it('should update an action (aID)', (done) => {
-      done()
+      const process = new Process(Object.assign(defaultProcess, { actions: defaultAction }))
+      const update = { name: 'actionName' }
+      process.save((err, proc) => {
+        chai.request(server)
+            .put(`/processes/${proc.id}/actions/${proc.actions[0].id}`)
+            .set('Authorization', `Bearer ${JWT}`)
+            .send(update)
+            .end((error, res) => {
+              res.should.have.status(200)
+              res.body.should.be.a('array')
+              res.body[0].name.should.be.eql(update.name)
+              res.body[0].meta.updatedAt.should.be.above(res.body[0].meta.createdAt)
+              done()
+            })
+      })
     })
   })
 
   // DELETE /:pID/actions/:aID
   describe('/DELETE/:pID/actions/:aID', () => {
     it('should delete an action (aID)', (done) => {
-      done()
+      const process = new Process(Object.assign(defaultProcess, { actions: defaultAction }))
+      process.save((err, proc) => {
+        chai.request(server)
+            .delete(`/processes/${proc.id}/actions/${proc.actions[0].id}`)
+            .set('Authorization', `Bearer ${JWT}`)
+            .end((error, res) => {
+              res.should.have.status(200)
+              res.body.should.be.a('object')
+              res.body.actions.length.should.be.eql(0)
+              done()
+            })
+      })
     })
   })
 })
