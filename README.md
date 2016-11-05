@@ -90,6 +90,18 @@ module.exports = config
   - POST /all - Creates a device, not for general use (use POST)
   - POST / - Creates a device owned by the user
   - PUT /:dID - Updates the device given by dID
+  
+- /processes
+  - GET /all - Returns all Processes in the database regardless of user, min data
+  - GET/:pID - Returns the Process specified by pID
+  - GET - Returns all Processes specified owned by the user
+  - POST/all - Creates a Process, not for general use (use POST)
+  - POST - Creates a process ownedBy the user
+  - PUT/:pID - Updates the Process specified by pID
+  - GET/:pID/actions - Returns all the actions in the process pID
+  - POST/:pID/actions - Creates a new action in the process pID
+  - PUT/:pID/actions/:aID - Updates an action on pID, given by aID
+  - DELETE/:pID/actions/:aID - Deletes and action on pID given by aID
 
 ## Models
 ### Template
@@ -108,7 +120,6 @@ meta: {
 ```
 ### Device
 ``` JavaScript
-const DeviceSchema = new Schema({
   name: { type: String },
   meta: {
     createdAt: { type: Date, default: Date.now },
@@ -135,28 +146,42 @@ const DeviceSchema = new Schema({
     description: { type: String },
     lat: { type: Number, min: [-90, 'Latitude invalid'], max: [90, 'Latitude invalid'] },
     long: { type: Number, min: [-180, 'Longitude invalid'], max: [90, 'Longitude invalid'] },
+  }
+```
+
+### Process
+``` JavaScript
+name: { type: String, required: [true, '[name] field required'] },
+  device: {
+    id: { type: Number, required: [true, '[device.id] field required'] },
+    port: { type: Number, required: [true, '[device.port] field required'] },
   },
-})
+  sensors: { type: [Number], validate: [checkSensor, '[sensors] field required'] },
+  loadType: { type: String, required: [true, '[loadType] field required'] },
+  control: {
+    type: { type: String, required: [true, '[control.type] field required'] },
+    method: { type: String, required: [true, '[control.method] field required'] },
+    value: { type: Number, required: [true, '[control.value] field required'] },
+  },
+  actions: [ActionSchema]
+```
 
-DeviceSchema.virtual('sensors.local').get(() => this.sensors.wired.concat(this.sensors.wireless))
-
-DeviceSchema.methods.update = function (updates, callback) { // eslint-disable-line func-names
-  Object.assign(this, updates, { meta: { updatedAt: new Date(), createdAt: this.meta.createdAt } })
-  this.save(callback)
-}
-
-DeviceSchema.statics.findByOwner = function (id, callback) { // eslint-disable-line func-names
-  this.find({ ownedBy: id }, callback)
-}
-
-DeviceSchema.statics.findByIdCheckOwner = function (id, owner, callback) { // eslint-disable-line func-names, max-len
-  this.findById(id, (err, doc) => {
-    if (doc.ownedBy !== owner) {
-      return callback(new IdError('nonmatching_user_id', {
-        message: 'user id does not match process owner. Invalid Request',
-      }))
-    }
-    return callback(err, doc)
-  })
-}
+### Action
+``` JavaScript
+name: { type: String, required: [true, '[name] field required'] },
+  port: { type: Number, required: [true, '[port] field required'] },
+  action: {
+    type: {
+      type: String,
+      required: [true, '[action.type] field required'],
+      validate: [actionValueValidate, '[action.value] field required'],
+    },
+    value: { type: Number },
+  },
+  duration: { type: Number, required: [true, '[duration] field required'] },
+  while: {
+    sensor: Number,
+    level: Number,
+    invert: Boolean,
+  }
 ```
