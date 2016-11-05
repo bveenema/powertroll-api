@@ -13,6 +13,7 @@ function getID(req, res, next) {
   if (id[1]) req.id = id[1]
   else req.id = id[0]
 
+  if (!next) return null
   return next()
 }
 
