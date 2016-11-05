@@ -13,7 +13,6 @@ function checkSensor(value) {
 
 const ProcessSchema = new Schema({
   name: { type: String, required: [true, '[name] field required'] },
-  ownedBy: { type: Number, required: [true, '[ownedBy] field required'] },
   device: {
     id: { type: Number, required: [true, '[device.id] field required'] },
     port: { type: Number, required: [true, '[device.port] field required'] },
