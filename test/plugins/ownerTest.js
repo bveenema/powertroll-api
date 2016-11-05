@@ -4,6 +4,7 @@ process.env.NODE_ENV = 'test'
 
 const chai = require('chai')
 const sinon = require('sinon')
+require('sinon-mongoose')
 const mongoose = require('mongoose')
 const owner = require('../../src/models/plugins/owner')
 
@@ -30,10 +31,13 @@ describe('owner Plugin', () => {
 
   it('should add [findbyOwner] static to schema', sinon.test(function (done) { // eslint-disable-line func-names
     const expectedDevice = { ownedBy: '12345' }
-    this.stub(New, 'find').yields(null, [expectedDevice])
+    this.mock(New).expects('find')
+          .chain('sort').withArgs({})
+          .chain('exec')
+          .yields(null, [expectedDevice])
     const n2 = new New(expectedDevice)
     n2.save(() => {
-      New.findByOwner('12345', (err, docs) => {
+      New.findByOwner('12345', {}, (err, docs) => {
         docs.should.be.a('array')
         docs[0].should.be.eql(expectedDevice)
         done()

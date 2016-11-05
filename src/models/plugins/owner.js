@@ -5,8 +5,12 @@ const IdError = require('../../errors/idError')
 module.exports = exports = function owner(schema) {
   schema.add({ ownedBy: { type: String, required: [true, 'owner required'] } })
 
-  schema.statics.findByOwner = function (id, callback) { // eslint-disable-line func-names
-    this.find({ ownedBy: id }, callback)
+  schema.statics.findByOwner = function (id, sort, callback) { // eslint-disable-line func-names
+    this.find({ ownedBy: id })
+        .sort(sort)
+        .exec((err, docs) => {
+          callback(err, docs)
+        })
   }
 
   schema.statics.findByIdCheckOwner = function (id, ownedBy, callback) { // eslint-disable-line func-names, max-len
