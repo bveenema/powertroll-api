@@ -4,6 +4,7 @@ const express = require('express')
 const templates = require('./templates')
 const devices = require('./devices')
 const processes = require('./processes')
+const sensors = require('./sensors')
 const jwtCheck = require('../../config/express.config').jwtCheck
 const guard = require('express-jwt-permissions')({
   requestProperty: 'user',
@@ -31,5 +32,6 @@ router.get('/subCheck', guard.check('admin'), getID, (req, res) => {
 router.use('/templates', templates)
 router.use('/devices', devices)
 router.use('/processes', processes)
+router.use('/sensors', sensors)
 
 module.exports = router

@@ -40,7 +40,7 @@ config.jwtCheck = jwt({
 config.auth0 = new AuthenticationClient({
  domain: '<domain>',
  clientId: '<clientID>'
- 
+
 config.JWT = '<JWT>'
 
 module.exports = config
@@ -90,6 +90,14 @@ module.exports = config
   - POST /all - Creates a device, not for general use (use POST)
   - POST / - Creates a device owned by the user
   - PUT /:dID - Updates the device given by dID
+
+- /sensors
+  - GET - Retrieve all devices owned by the user
+  - GET/all - Retrieve all devices in db, min-data
+  - POST - Create a device owned by the user
+  - POST/all - Create a device, not for general user (see POST)
+  - PUT/:sID - Update a device given by sID
+  - DELETE/:sID - Delete a device given by sID
 
 ## Models
 ### Template
