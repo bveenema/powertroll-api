@@ -27,6 +27,7 @@ describe('/sensors', () => {
     dataMeta: {
       type: 'foo',
       unit: 'foo',
+      latestData: -0.833333333,
     },
   }
   describe('/GET/', () => {
@@ -46,7 +47,25 @@ describe('/sensors', () => {
     })
   })
   describe('/GET/all', () => {
-    it('should Retrieve all devices in db, min-data')
+    it('should Retrieve all devices in db, min-data', (done) => {
+      const s = new Sensor(defaultSensor)
+      s.save(() => {
+        chai.request(server)
+            .get('/sensors/all')
+            .set('Authorization', `Bearer ${JWT}`)
+            .end((err, res) => {
+              const r = res.body[0]
+              res.should.have.status(200)
+              res.body.should.be.a('array')
+              r.type.should.be.eql('foo')
+              r.should.have.property('connectionStatus')
+              r.should.have.property('dataMeta')
+              r.dataMeta.should.not.have.property('latestData')
+              done()
+            })
+      })
+    })
+    it('should get the number of dataPoints')
   })
   describe('/POST/', () => {
     it('should Create a device owned by the user', (done) => {
@@ -63,12 +82,50 @@ describe('/sensors', () => {
     })
   })
   describe('/POST/all', () => {
-    it('should Create a device')
+    it('should Create a device', (done) => {
+      chai.request(server)
+          .post('/sensors')
+          .set('Authorization', `Bearer ${JWT}`)
+          .send(defaultSensor)
+          .end((err, res) => {
+            res.should.have.status(201)
+            res.body.should.be.a('object')
+            res.body.type.should.be.eql('foo')
+            done()
+          })
+    })
   })
   describe('/PUT/:sID', () => {
-    it('should Update a device given by sID')
+    it('should Update a device given by sID', (done) => {
+      const s = new Sensor(defaultSensor)
+      const update = { type: 'fudge' }
+      s.save((err, doc) => {
+        chai.request(server)
+            .put(`/sensors/${doc.id}`)
+            .set('Authorization', `Bearer ${JWT}`)
+            .send(update)
+            .end((error, res) => {
+              res.should.have.status(200)
+              res.body.should.be.a('object')
+              res.body.type.should.be.eql('fudge')
+              res.body.meta.updatedAt.should.be.above(res.body.meta.createdAt)
+              done()
+            })
+      })
+    })
   })
   describe('/DELETE/:sID', () => {
-    it('should Delete a device given by sID')
+    it('should Delete a device given by sID', (done) => {
+      const s = new Sensor(defaultSensor)
+      s.save((err, doc) => {
+        chai.request(server)
+            .delete(`/sensors/${doc.id}`)
+            .set('Authorization', `Bearer ${JWT}`)
+            .end((error, res) => {
+              res.should.have.status(200)
+              done()
+            })
+      })
+    })
   })
 })
