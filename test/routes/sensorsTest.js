@@ -27,7 +27,6 @@ describe('/sensors', () => {
     dataMeta: {
       type: 'foo',
       unit: 'foo',
-      latestData: -0.833333333,
     },
   }
   describe('/GET/', () => {
@@ -60,7 +59,7 @@ describe('/sensors', () => {
               r.type.should.be.eql('foo')
               r.should.have.property('connectionStatus')
               r.should.have.property('dataMeta')
-              r.dataMeta.should.not.have.property('latestData')
+              r.should.not.have.property('lastValue')
               done()
             })
       })
@@ -77,6 +76,31 @@ describe('/sensors', () => {
             res.should.have.status(201)
             res.body.should.be.a('object')
             res.body.type.should.be.eql('foo')
+            done()
+          })
+    })
+    it('should strip out any writes to data tracking fields', (done) => {
+      const sWrite = Object.assign(
+        {},
+        defaultSensor,
+        {
+          lastDate: new Date(),
+          lastValue: -0.8333333,
+          segmentId: 12345,
+          pointer: 42,
+        }
+      )
+      chai.request(server)
+          .post('/sensors')
+          .set('Authorization', `Bearer ${JWT}`)
+          .send(sWrite)
+          .end((err, res) => {
+            console.log('err: ', err)
+            res.should.have.status(201)
+            res.body.should.not.have.property('lastDate')
+            res.body.should.not.have.property('lastValue')
+            res.body.should.not.have.property('segmentId')
+            res.body.should.not.have.property('pointer')
             done()
           })
     })

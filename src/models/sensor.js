@@ -6,7 +6,7 @@ const owner = require('./plugins/owner')
 
 const Schema = mongoose.Schema
 
-function threeChannelValidate(value) {
+function threeChannelValidate() {
   if (this.dataMeta.color.length !== 3) return false
   return true
 }
@@ -33,9 +33,11 @@ const SensorSchema = new Schema({
       max: [255, 'color channel too high'],
       validate: [threeChannelValidate, 'must have 3 channels'],
     }],
-    latestData: { type: Number },
   },
-  dataSets: [Schema.Types.ObjectId],
+  lastDate: Number,
+  lastValue: Number,
+  segmentId: Schema.Types.ObjectId,
+  pointer: Number,
 })
 
 SensorSchema.plugin(meta)
