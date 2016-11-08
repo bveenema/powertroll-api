@@ -34,7 +34,7 @@ const SensorSchema = new Schema({
       validate: [threeChannelValidate, 'must have 3 channels'],
     }],
   },
-  lastDate: Number,
+  lastDate: Date,
   lastValue: Number,
   segmentId: Schema.Types.ObjectId,
   pointer: Number,

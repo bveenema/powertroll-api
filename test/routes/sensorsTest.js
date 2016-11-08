@@ -3,6 +3,7 @@
 process.env.NODE_ENV = 'test'
 
 const Sensor = require('../../src/models').Sensor
+const mongoose = require('mongoose')
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../../src/index')
@@ -86,7 +87,7 @@ describe('/sensors', () => {
         {
           lastDate: new Date(),
           lastValue: -0.8333333,
-          segmentId: 12345,
+          segmentId: new mongoose.Types.ObjectId,
           pointer: 42,
         }
       )
@@ -95,7 +96,6 @@ describe('/sensors', () => {
           .set('Authorization', `Bearer ${JWT}`)
           .send(sWrite)
           .end((err, res) => {
-            console.log('err: ', err)
             res.should.have.status(201)
             res.body.should.not.have.property('lastDate')
             res.body.should.not.have.property('lastValue')

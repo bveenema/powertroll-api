@@ -53,6 +53,10 @@ sensors.get('/all', guard.check('admin'), (req, res, next) => {
 // POST - Create a device owned by the user
 sensors.post('/', guard.check('user'), getID, (req, res, next) => {
   const s = new Sensor()
+  delete req.body.lastDate
+  delete req.body.lastValue
+  delete req.body.segmentId
+  delete req.body.pointer
   s.saveOwner(req.body, req.id, (err, doc) => {
     if (err) {
       if (err.message === 'Device validation failed') err.status = 200
