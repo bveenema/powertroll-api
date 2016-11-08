@@ -3,7 +3,6 @@
 process.env.NODE_ENV = 'test'
 
 const chai = require('chai')
-const sinon = require('sinon')
 const mongoose = require('mongoose')
 const meta = require('../../src/models/plugins/meta')
 
@@ -15,18 +14,25 @@ describe('meta Plugin', () => {
   let Meta
   let m
   before(() => {
-    const MetaSchema = new Schema({})
+    const MetaSchema = new Schema({ name: String })
     MetaSchema.plugin(meta)
     Meta = mongoose.model('Meta', MetaSchema)
-    m = new Meta()
+    m = new Meta({ name: 'foo' })
   })
 
-  it('should at [meta] field to schema', (done) => {
+  it('should add [meta] field to schema', () => {
     m.save((err, doc) => {
       doc.meta.should.have.property('updatedAt')
       doc.meta.should.have.property('createdAt')
-      done()
     })
   })
-  it('should at [update] method to model')
+  it('should add [update] method to model', (done) => {
+    m.save((err, doc) => {
+      setTimeout(doc.update({ name: 'bar' }, (error, document) => {
+        document.name.should.be.eql('bar')
+        document.meta.updatedAt.should.be.above(document.meta.createdAt)
+        done()
+      }), 1)
+    })
+  })
 })

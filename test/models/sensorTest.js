@@ -7,7 +7,7 @@ const Sensor = require('../../src/models').Sensor
 
 const should = chai.should() //eslint-disable-line
 
-describe('Device Model', () => {
+describe('Sensor Model', () => {
   const defaultSensor = {
     type: 'foo',
     ownedBy: '12345',

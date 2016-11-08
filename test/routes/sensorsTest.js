@@ -87,7 +87,7 @@ describe('/sensors', () => {
         {
           lastDate: new Date(),
           lastValue: -0.8333333,
-          segmentId: new mongoose.Types.ObjectId,
+          segmentId: new mongoose.Types.ObjectId(),
           pointer: 42,
         }
       )
