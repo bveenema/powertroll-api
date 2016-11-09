@@ -3,6 +3,7 @@
 const mongoose = require('mongoose')
 const meta = require('./plugins/meta')
 const owner = require('./plugins/owner')
+const Data = require('./data')
 
 const Schema = mongoose.Schema
 
@@ -42,6 +43,16 @@ const SensorSchema = new Schema({
 
 SensorSchema.plugin(meta)
 SensorSchema.plugin(owner)
+
+SensorSchema.pre('save', function (next) {
+  let d
+  if (!(segmentId in this)) {
+    d = new Data({
+      series: this.id,
+      ownedBy: this.ownedBy,
+    })
+  }
+})
 
 const Sensor = mongoose.model('Sensor', SensorSchema)
 
