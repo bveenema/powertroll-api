@@ -43,17 +43,4 @@ describe('Data Model', () => {
       doc.value.length.should.be.eql(160)
     })
   })
-  it('should use setData method to update the proper position', () => {
-    const d = new Data(defaultData)
-    const pointer = 42
-    const newData = { time: mockData.time[pointer], value: mockData.value[pointer] }
-    d.save((err, doc) => {
-      doc.setData(newData, pointer, () => {
-        d.findById(doc.id, (error, res) => {
-          res.time[pointer].should.be.eql(mockData.time[pointer])
-          res.value[pointer].should.be.eql(mockData.value[pointer])
-        })
-      })
-    })
-  })
 })
