@@ -152,4 +152,29 @@ describe('/sensors', () => {
       })
     })
   })
+
+  describe('/POST/data', () => {
+    it('should pass data packet and user id to dataManager')
+    it('should respond with 200', (done) => {
+      const dataPacket = {
+        sensorId: '12345',
+        data: -0.8333333,
+        time: new Date(),
+      }
+      chai.request(server)
+          .post('/sensors/data')
+          .set('Authorization', `Bearer ${JWT}`)
+          .send(dataPacket)
+          .end((err, res) => {
+            res.should.have.status(202)
+            done()
+          })
+    })
+  })
+
+  describe('/GET/data/:sID?start=""?stop=""?numPoints=""', () => {
+    it('should process querry strings')
+    it('should return the sensors data in the range')
+    it('should limit data Points to 1000')
+  })
 })

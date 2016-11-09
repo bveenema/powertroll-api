@@ -90,7 +90,7 @@ module.exports = config
   - POST /all - Creates a device, not for general use (use POST)
   - POST / - Creates a device owned by the user
   - PUT /:dID - Updates the device given by dID
-  
+
 - /processes
   - GET /all - Returns all Processes in the database regardless of user, min data
   - GET/:pID - Returns the Process specified by pID
@@ -110,6 +110,16 @@ module.exports = config
   - POST/all - Create a device, not for general user (see POST)
   - PUT/:sID - Update a device given by sID
   - DELETE/:sID - Delete a device given by sID
+  - /data
+    - POST - Adds data to the db.  Body must have { sensorId, data, time }
+    - GET/:sID?start=""?stop?=""?numPoints="" - Retrieves sensor data from the db (not yet implemented)
+
+## Data Manager
+App that processes incoming data from the /sensors/data route.
+
+`dataManager.recieveData` Sends data packet to processData and returns true
+`dataManager.processData` Not yet implemented
+
 
 ## Models
 ### Template
@@ -219,4 +229,13 @@ dataMeta: {
   latestData: { type: Number },
 },
 dataSets: [Schema.Types.ObjectId]
+```
+### Data
+``` JavaScript
+series: Schema.Types.ObjectId,
+ownedBy: String,
+prevEnd: Date,
+nextStart: Date,
+time: [Date],
+value: [Number],
 ```

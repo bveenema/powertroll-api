@@ -1,6 +1,7 @@
 'use strict'
 
 const express = require('express')
+const dataManager = require('../app/dataManager')
 const Sensor = require('../models').Sensor
 const guard = require('express-jwt-permissions')({
   requestProperty: 'user',
@@ -100,6 +101,15 @@ sensors.delete('/:sID', guard.check('user'), (req, res, next) => {
     res.json(removed)
     return null
   })
+})
+
+sensors.post('/data', guard.check('user'), getID, (req, res) => {
+  const dataPacket = Object.assign({}, req.body, { ownerId: req.id })
+  const response = dataManager.recieveData(dataPacket)
+  if (response) res.status(202)
+  else res.status(400)
+  res.send(response)
+  return null
 })
 
 module.exports = sensors
