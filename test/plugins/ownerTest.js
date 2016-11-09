@@ -22,6 +22,12 @@ describe('owner Plugin', () => {
     n = new New()
   })
 
+  beforeEach((done) => { // Empty database
+    New.remove({}, () => {
+      done()
+    })
+  })
+
   it('should add [owner] field to schema', (done) => {
     n.validate((err) => {
       err.errors.ownedBy.message.should.be.eql('owner required')

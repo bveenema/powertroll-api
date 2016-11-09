@@ -19,6 +19,11 @@ describe('meta Plugin', () => {
     Meta = mongoose.model('Meta', MetaSchema)
     m = new Meta({ name: 'foo' })
   })
+  beforeEach((done) => { // Empty database
+    Meta.remove({}, () => {
+      done()
+    })
+  })
 
   it('should add [meta] field to schema', () => {
     m.save((err, doc) => {
@@ -28,11 +33,13 @@ describe('meta Plugin', () => {
   })
   it('should add [update] method to model', (done) => {
     m.save((err, doc) => {
-      setTimeout(doc.update({ name: 'bar' }, (error, document) => {
-        document.name.should.be.eql('bar')
-        document.meta.updatedAt.should.be.above(document.meta.createdAt)
-        done()
-      }), 1)
+      setTimeout(() => {
+        doc.update({ name: 'bar' }, (error, document) => {
+          document.name.should.be.eql('bar')
+          document.meta.updatedAt.should.be.above(document.meta.createdAt)
+          done()
+        })
+      }, 10)
     })
   })
 })
