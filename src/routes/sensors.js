@@ -63,8 +63,12 @@ sensors.post('/', guard.check('user'), getID, (req, res, next) => {
       if (err.message === 'Device validation failed') err.status = 200
       return next(err)
     }
-    res.status(201)
-    res.json(doc)
+    dataManager.newSensor(doc.id, req.id, (error) => {
+      if (error) return next(error)
+      res.status(201)
+      res.json(doc)
+      return null
+    })
     return null
   })
 })
@@ -77,8 +81,12 @@ sensors.post('/all', guard.check('tech'), (req, res, next) => {
       if (err.message === 'Device validation failed') err.status = 200
       return next(err)
     }
-    res.status(201)
-    res.json(doc)
+    dataManager.newSensor(doc.id, req.id, (error) => {
+      if (error) return next(error)
+      res.status(201)
+      res.json(doc)
+      return null
+    })
     return null
   })
 })

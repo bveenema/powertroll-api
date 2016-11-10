@@ -68,7 +68,7 @@ describe('/sensors', () => {
     it('should get the number of dataPoints')
   })
   describe('/POST/', () => {
-    it('should Create a device owned by the user', (done) => {
+    it('should Create a sensor owned by the user', (done) => {
       chai.request(server)
           .post('/sensors')
           .set('Authorization', `Bearer ${JWT}`)
@@ -104,6 +104,7 @@ describe('/sensors', () => {
             done()
           })
     })
+    it('should call newSensor from DataManager')
   })
   describe('/POST/all', () => {
     it('should Create a device', (done) => {
