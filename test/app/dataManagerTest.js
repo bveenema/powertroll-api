@@ -1,7 +1,12 @@
 'use strict'
 
-const sinon = require('sinon')
+const sin = require('sinon')
+const chai = require('chai')
+const sinonChai = require('sinon-chai')
 const dataManager = require('../../src/app/dataManager')
+const mongoose = require('mongoose')
+
+chai.use(sinonChai)
 
 describe('DataManager', () => {
   const dummySensor = {
@@ -13,19 +18,28 @@ describe('DataManager', () => {
     { data: -0.83333, time: new Date() }
   )
 
+  let sinon
+  beforeEach(() => {
+    sinon = sin.sandbox.create()
+  })
+
+  afterEach(() => {
+    sinon.restore()
+  })
+
   describe('newSensor(sID, ownedBy, callback)', () => {
     it('should callback error if sID or ownedBy missing', () => {
       dataManager.newSensor(null, null, (err) => {
         err.message.should.be.eql('sID or ownedBy missing')
       })
     })
-    it('should call createDataSeries', sinon.test(function () { // eslint-disable-line func-names
-      this.spy(dataManager, 'createDataSeries')
-      dataManager.newSensor(dummySensor.sID, dummySensor.ownedBy, () => {})
+    it('should call createDataSeries', (done) => {
+      const createDataSeries = sinon.stub(dataManager, 'createDataSeries')
+      dataManager.newSensor(dummySensor.sID, dummySensor.ownedBy, done)
 
-      sinon.assert.callCount(dataManager.createDataSeries, 1)
-      sinon.assert.calledWith(dataManager.createDataSeries, dummySensor.sID, dummySensor.ownedBy)
-    }))
+      createDataSeries.should.have.callCount(1)
+      createDataSeries.should.have.been.calledWith(dummySensor.sID, dummySensor.ownedBy)
+    })
   })
 
   describe('recieveData(data)', () => {
@@ -37,13 +51,27 @@ describe('DataManager', () => {
       const isFalse = dataManager.recieveData({})
       isFalse.should.be.eql(false)
     })
-    it('should call processData', sinon.test(function () { // eslint-disable-line func-names
-      this.spy(dataManager, 'processData')
+    it('should call processData', () => {
+      const processData = sinon.spy(dataManager, 'processData')
       dataManager.recieveData(dataPacket)
 
-      sinon.assert.callCount(dataManager.processData, 1)
-      sinon.assert.calledWith(dataManager.processData, dataPacket)
-    }))
+      processData.should.have.callCount(1)
+      processData.should.have.been.calledWith(dataPacket)
+    })
+  })
+
+  describe('createDataSeries(sID, ownedBy)', () => {
+    it('should just run', (done) => {
+      const expectedData = { id: '12345' }
+      const save = sinon.stub(mongoose.Model.prototype, 'save').yields(null, expectedData)
+      const update = sinon.stub(mongoose.Model, 'update')
+
+      dataManager.createDataSeries(dummySensor.sID, dummySensor.ownedBy)
+      done()
+
+      save.should.have.callCount(1)
+      update.should.have.callCount(1)
+    })
   })
 
   describe('processData(data)', () => {

@@ -1,6 +1,6 @@
 'use strict'
 
-// const Sensor = require('../models').Sensor
+const Sensor = require('../models').Sensor
 const Data = require('../models').Data
 const mongoose = require('mongoose')
 const moment = require('moment')
@@ -33,12 +33,21 @@ dataManager.createDataSeries = (sID, ownedBy) => {
   }
   const d = new Data(startData)
   d.save((err, doc) => {
-    // left off here
+    if (err) {
+      console.log(`Error Creating Data Document! sID: ${sID} ownedBy: ${ownedBy}`)
+    }
+    Sensor.update({ _id: sID }, { segmentId: doc.id, pointer: 159 }).exec()
   })
 }
 
 dataManager.processData = (data) => {
-  // do something
+  // read sensor from db (findbyIdAndUpdate)
+  Sensor.findByIdCheckOwner(data.sID, data.ownedBy, (err, doc) => {
+    // update data Segment at pointer
+    Data.update({ _id: doc.segmentId }, { `time.${doc.pointer}`: data.time, `value.${doc.pointer}`: data.data}).exec()
+
+  })
+
 }
 
 module.exports = dataManager
