@@ -158,7 +158,7 @@ describe('/sensors', () => {
     it('should pass data packet and user id to dataManager')
     it('should respond with 200', (done) => {
       const dataPacket = {
-        sensorId: '12345',
+        sID: '12345',
         data: -0.8333333,
         time: new Date(),
       }

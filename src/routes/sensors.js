@@ -112,7 +112,7 @@ sensors.delete('/:sID', guard.check('user'), (req, res, next) => {
 })
 
 sensors.post('/data', guard.check('user'), getID, (req, res) => {
-  const dataPacket = Object.assign({}, req.body, { ownerId: req.id })
+  const dataPacket = Object.assign({}, req.body, { ownedBy: req.id })
   const response = dataManager.recieveData(dataPacket)
   if (response) res.status(202)
   else res.status(400)
