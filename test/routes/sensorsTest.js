@@ -3,21 +3,31 @@
 process.env.NODE_ENV = 'test'
 
 const Sensor = require('../../src/models').Sensor
+const dataManager = require('../../src/app/dataManager')
 const mongoose = require('mongoose')
+const sin = require('sinon')
 const chai = require('chai')
+const sinonChai = require('sinon-chai')
 const chaiHttp = require('chai-http')
 const server = require('../../src/index')
 const JWT = require('../../config/expressTest.config').JWT
 
 const should = chai.should() //eslint-disable-line
 
+chai.use(sinonChai)
 chai.use(chaiHttp)
 
 describe('/sensors', () => {
+  let sinon
   beforeEach((done) => { // Empty database
+    sinon = sin.sandbox.create()
     Sensor.remove({}, () => {
       done()
     })
+  })
+
+  afterEach(() => {
+    sinon.restore()
   })
   const defaultSensor = {
     type: 'foo',
@@ -155,18 +165,36 @@ describe('/sensors', () => {
   })
 
   describe('/POST/data', () => {
-    it('should pass data packet and user id to dataManager')
-    it('should respond with 200', (done) => {
+    it('should pass data packet and user id to dataManager', (done) => {
+      const recieveData = sinon.stub(dataManager, 'recieveData').yields(true)
       const dataPacket = {
         sID: '12345',
-        data: -0.8333333,
+        value: -0.8333333,
+        time: 7,
+      }
+      const expectedCall = Object.assign({}, dataPacket, { ownedBy: '12345' })
+      chai.request(server)
+          .post('/sensors/data')
+          .set('Authorization', `Bearer ${JWT}`)
+          .send(dataPacket)
+          .end(() => {
+            recieveData.should.have.callCount(1)
+            recieveData.should.have.been.calledWith(expectedCall)
+            done()
+          })
+    })
+    it('should respond with 202', (done) => {
+      sinon.stub(dataManager, 'processData')
+      const dataPacket = {
+        sID: '12345',
+        value: -0.8333333,
         time: new Date(),
       }
       chai.request(server)
           .post('/sensors/data')
           .set('Authorization', `Bearer ${JWT}`)
           .send(dataPacket)
-          .end((err, res) => {
+          .end((error, res) => {
             res.should.have.status(202)
             done()
           })
