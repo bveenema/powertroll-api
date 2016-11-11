@@ -47,7 +47,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 })
 
 app.listen(expressConfig.port, () => {
-  console.log(`Example app listening on port  ${expressConfig.port}!`)
+  console.log(`PowerTroll API listening on port  ${expressConfig.port}!`)
 })
 
 module.exports = app // for testing

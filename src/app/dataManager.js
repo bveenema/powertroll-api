@@ -4,6 +4,7 @@ const Sensor = require('../models').Sensor
 const Data = require('../models').Data
 const mongoose = require('mongoose')
 const moment = require('moment')
+const fill = require('lodash.fill')
 
 const dataManager = {}
 
@@ -41,18 +42,49 @@ dataManager.createDataSeries = (sID, ownedBy) => {
 }
 
 dataManager.processData = (data) => {
-  // read sensor from db (findbyIdAndUpdate)
   Sensor.findOneAndUpdate(
     { _id: data.sID, ownedBy: data.ownedBy },
     { $set: { lastValue: data.value, lastDate: data.time }, $inc: { pointer: -1 } },
     { new: true },
     (err, doc) => {
-      // update data Segment at pointer
-      console.log('doc: ', doc.pointer)
-      const fields = {}
-      fields[`time.${doc.pointer}`] = data.time
-      fields[`value.${doc.pointer}`] = data.value
-      Data.update({ _id: doc.segmentId }, { fields }).exec()
+      if (doc.pointer < 0) {
+        dataManager.addDataSegment(doc, data)
+      } else {
+        const fields = {}
+        fields[`time.${doc.pointer}`] = data.time
+        fields[`value.${doc.pointer}`] = data.value
+        Data.update({ _id: doc.segmentId }, { $set: fields }).exec()
+      }
+    }
+  )
+}
+
+dataManager.addDataSegment = (sensor, data) => {
+  // Update nextStart on previous DataSegment and get series and ownedBy
+  Data.findByIdAndUpdate(
+    sensor.segmentId,
+    { $set: { nextStart: data.time } },
+    { new: true },
+    (e, prevData) => {
+      // Create a new data segment and store data and prevEnd
+      const newData = {
+        series: prevData.series,
+        ownedBy: prevData.ownedBy,
+        prevEnd: prevData.time[0],
+        nextStart: moment().year(30000).toDate(),
+        time: fill(Array(160), 0),
+        value: fill(Array(160), 0),
+      }
+      newData.time[160 - 1] = data.time
+      newData.value[160 - 1] = data.value
+      const d = new Data(newData)
+      d.save((err, doc) => {
+        // Update Sensor with new segmentId and reset pointer
+        if (err) {
+          console.log(`Error Creating Data Document! sID: ${sensor.id} ownedBy: ${sensor.ownedBy}`)
+        }
+        Sensor.update({ _id: sensor.id }, { segmentId: doc.id, pointer: 160 }).exec()
+      })
     }
   )
 }

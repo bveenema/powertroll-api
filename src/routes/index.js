@@ -17,6 +17,7 @@ const router = express.Router()
 router.use(jwtCheck.unless({ path: ['/apiCheck'] }))
 
 router.get('/apiCheck', (req, res) => {
+  console.log('alive')
   res.send('api is alive')
 })
 

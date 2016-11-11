@@ -22,6 +22,7 @@ sensors.param('sID', (req, res, next, sID) => {
 
 // GET - Retrieve all devices owned by the user
 sensors.get('/', guard.check('user'), getID, (req, res, next) => {
+  console.log('get sensor')
   Sensor.findByOwner(req.id, { name: -1 }, (err, docs) => {
     if (err) return next(err)
     res.status(200)

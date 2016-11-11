@@ -165,6 +165,16 @@ describe('/sensors', () => {
   })
 
   describe('/POST/data', () => {
+    const createSensor = (sensor, callback) => {
+      chai.request(server)
+          .post('/sensors')
+          .set('Authorization', `Bearer ${JWT}`)
+          .send(sensor)
+          .end((err, res) => {
+            const sID = res.id
+            callback(sID)
+          })
+    }
     it('should pass data packet and user id to dataManager', (done) => {
       const recieveData = sinon.stub(dataManager, 'recieveData').yields(true)
       const dataPacket = {
@@ -199,11 +209,29 @@ describe('/sensors', () => {
             done()
           })
     })
+    it('should update the sensor and data documents', (done) => {
+      const testSensor = Object.assign({}, defaultSensor, { name: 'test' })
+      createSensor(testSensor, (sID) => {
+        const dataPacket = {
+          sID,
+          value: -0.8333333,
+          time: new Date(),
+        }
+        chai.request(server)
+            .post('/sensors/data')
+            .set('Authorization', `Bearer ${JWT}`)
+            .send(dataPacket)
+            .end((err, res) => {
+              console.log('res: ', res.body)
+              done()
+            })
+      })
+    })
   })
 
-  describe('/GET/data/:sID?start=""?stop=""?numPoints=""', () => {
-    it('should process querry strings')
-    it('should return the sensors data in the range')
-    it('should limit data Points to 1000')
-  })
+  // describe('/GET/data/:sID?start=""?stop=""?numPoints=""', () => {
+  //   it('should process querry strings')
+  //   it('should return the sensors data in the range')
+  //   it('should limit data Points to 1000')
+  // })
 })
