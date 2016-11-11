@@ -16,7 +16,7 @@ dataManager.newSensor = (sID, ownedBy, callback) => {
 }
 
 dataManager.recieveData = (data) => {
-  const requiredKeys = ['sID', 'data', 'time', 'ownedBy']
+  const requiredKeys = ['sID', 'value', 'time', 'ownedBy']
   if (requiredKeys.every(k => k in data)) {
     dataManager.processData(data)
     return true
@@ -36,18 +36,25 @@ dataManager.createDataSeries = (sID, ownedBy) => {
     if (err) {
       console.log(`Error Creating Data Document! sID: ${sID} ownedBy: ${ownedBy}`)
     }
-    Sensor.update({ _id: sID }, { segmentId: doc.id, pointer: 159 }).exec()
+    Sensor.update({ _id: sID }, { segmentId: doc.id, pointer: 160 }).exec()
   })
 }
 
 dataManager.processData = (data) => {
   // read sensor from db (findbyIdAndUpdate)
-  Sensor.findByIdCheckOwner(data.sID, data.ownedBy, (err, doc) => {
-    // update data Segment at pointer
-    Data.update({ _id: doc.segmentId }, { `time.${doc.pointer}`: data.time, `value.${doc.pointer}`: data.data}).exec()
-
-  })
-
+  Sensor.findOneAndUpdate(
+    { _id: data.sID, ownedBy: data.ownedBy },
+    { $set: { lastValue: data.value, lastDate: data.time }, $inc: { pointer: -1 } },
+    { new: true },
+    (err, doc) => {
+      // update data Segment at pointer
+      console.log('doc: ', doc.pointer)
+      const fields = {}
+      fields[`time.${doc.pointer}`] = data.time
+      fields[`value.${doc.pointer}`] = data.value
+      Data.update({ _id: doc.segmentId }, { fields }).exec()
+    }
+  )
 }
 
 module.exports = dataManager

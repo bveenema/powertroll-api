@@ -15,7 +15,7 @@ describe('DataManager', () => {
   }
   const dataPacket = Object.assign({},
     dummySensor,
-    { data: -0.83333, time: new Date() }
+    { value: -0.83333, time: new Date() }
   )
 
   let sinon
@@ -61,7 +61,7 @@ describe('DataManager', () => {
   })
 
   describe('createDataSeries(sID, ownedBy)', () => {
-    it('should just run', (done) => {
+    it('should create a data and update sensor', (done) => {
       const expectedData = { id: '12345' }
       const save = sinon.stub(mongoose.Model.prototype, 'save').yields(null, expectedData)
       const update = sinon.stub(mongoose.Model, 'update')
@@ -75,7 +75,29 @@ describe('DataManager', () => {
   })
 
   describe('processData(data)', () => {
-    it('should store data in database')
+    const mockPacket = {
+      sID: '12345',
+      ownedBy: '54321',
+      value: -0.83333,
+      time: 42,
+    }
+    const expectedSensor = {
+      pointer: 101,
+      segmentId: '8675309',
+    }
+    it('should find and update the sensor and data Segment', (done) => {
+      const findOneAndUpdate = sinon.stub(mongoose.Model, 'findOneAndUpdate').yields(null, expectedSensor)
+      const update = sinon.stub(mongoose.Model, 'update')
+
+      dataManager.processData(mockPacket)
+      done()
+
+      findOneAndUpdate.should.have.callCount(1)
+      update.should.have.callCount(1)
+      findOneAndUpdate.should.have.been.calledWith(
+        { _id: mockPacket.sID, ownedBy: mockPacket.ownedBy }
+      )
+    })
   })
 
   describe('retrieveData(sensorID, range, [numPoints])', () => {
