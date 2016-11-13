@@ -33,12 +33,12 @@ describe('DataManager', () => {
         err.message.should.be.eql('sID or ownedBy missing')
       })
     })
-    it('should call createDataSeries', (done) => {
-      const createDataSeries = sinon.stub(dataManager, 'createDataSeries')
+    it('should call createDataSegment', (done) => {
+      const createDataSegment = sinon.stub(dataManager, 'createDataSegment')
       dataManager.newSensor(dummySensor.sID, dummySensor.ownedBy, done)
 
-      createDataSeries.should.have.callCount(1)
-      createDataSeries.should.have.been.calledWith(dummySensor.sID, dummySensor.ownedBy)
+      createDataSegment.should.have.callCount(1)
+      createDataSegment.should.have.been.calledWith(dummySensor.sID, dummySensor.ownedBy)
     })
   })
 
@@ -60,13 +60,13 @@ describe('DataManager', () => {
     })
   })
 
-  describe('createDataSeries(sID, ownedBy)', () => {
+  describe('createDataSegment(sID, ownedBy)', () => {
     it('should create a data and update sensor', (done) => {
       const expectedData = { id: '12345' }
       const save = sinon.stub(mongoose.Model.prototype, 'save').yields(null, expectedData)
       const update = sinon.stub(mongoose.Model, 'update')
 
-      dataManager.createDataSeries(dummySensor.sID, dummySensor.ownedBy)
+      dataManager.createDataSegment(dummySensor.sID, dummySensor.ownedBy)
       done()
 
       save.should.have.callCount(1)
@@ -96,6 +96,45 @@ describe('DataManager', () => {
       update.should.have.callCount(1)
       findOneAndUpdate.should.have.been.calledWith(
         { _id: mockPacket.sID, ownedBy: mockPacket.ownedBy }
+      )
+    })
+    it('should call addDataSegment if pointer < 0')
+  })
+
+  describe('addDataSegment(sensor, data)', () => {
+    it('should call createDataSegment', (done) => {
+      const mockDataSegment = {
+        series: '12345',
+        ownedBy: '12345',
+        prevEnd: new Date(0),
+        nextStart: new Date(),
+        time: [new Date(0), new Date(1000), new Date(2000)],
+        value: [0, 1, 2],
+      }
+      const mockSensor = {
+        id: '12345',
+        ownedBy: '12345',
+      }
+      const mockData = {
+        sID: '54321',
+        time: new Date(),
+        value: -0.83333,
+        ownedBy: '12345',
+      }
+      const findOneAndUpdate = sinon.stub(mongoose.Model, 'findOneAndUpdate').yields(null, mockDataSegment)
+      const createDataSegment = sinon.stub(dataManager, 'createDataSegment')
+
+
+      dataManager.addDataSegment(mockSensor, mockData)
+      done()
+
+      findOneAndUpdate.should.have.callCount(1)
+      createDataSegment.should.have.callcount(1)
+      createDataSegment.should.have.been.calledWith(
+        mockSensor.id,
+        mockSensor.ownedBy,
+        mockDataSegment,
+        mockData
       )
     })
   })

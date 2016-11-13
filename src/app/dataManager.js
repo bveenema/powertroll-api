@@ -8,47 +8,58 @@ const fill = require('lodash.fill')
 
 const dataManager = {}
 
-dataManager.newSensor = (sID, ownedBy, callback) => {
+dataManager.segLen = 5
+
+dataManager.newSensor = function newSensor(sID, ownedBy, callback) {
   if (sID == null || ownedBy == null) {
     return callback(new Error('sID or ownedBy missing'))
   }
-  dataManager.createDataSeries(sID, ownedBy)
+  this.createDataSegment(sID, ownedBy)
   return callback()
 }
 
-dataManager.recieveData = (data) => {
+dataManager.recieveData = function recieveData(data) {
   const requiredKeys = ['sID', 'value', 'time', 'ownedBy']
   if (requiredKeys.every(k => k in data)) {
-    dataManager.processData(data)
+    this.processData(data)
     return true
   }
   return false
 }
 
-dataManager.createDataSeries = (sID, ownedBy) => {
+dataManager.createDataSegment = function createDataSegment(sID, ownedBy, prevData = {}, data = {}) {
+  let prevTime
+  if (prevData.time) prevTime = prevData.time[0]
+
   const startData = {
-    series: new mongoose.Types.ObjectId(),
+    series: prevData.series || new mongoose.Types.ObjectId(),
     ownedBy,
-    prevEnd: moment(0).toDate(),
+    prevEnd: prevTime || moment(0).toDate(),
     nextStart: moment().year(30000).toDate(),
+    time: fill(Array(this.segLen), 0),
+    value: fill(Array(this.segLen), 0),
   }
+  startData.time[this.segLen - 1] = data.time || 0
+  startData.value[this.segLen - 1] = data.value || 0
+
   const d = new Data(startData)
   d.save((err, doc) => {
     if (err) {
-      console.log(`Error Creating Data Document! sID: ${sID} ownedBy: ${ownedBy}`)
+      console.log('Error: ', err)
     }
-    Sensor.update({ _id: sID }, { segmentId: doc.id, pointer: 160 }).exec()
+    const ptr = (data.time) ? this.segLen - 1 : this.segLen
+    Sensor.update({ _id: sID }, { segmentId: doc.id, pointer: ptr }).exec()
   })
 }
 
-dataManager.processData = (data) => {
+dataManager.processData = function processData(data) {
   Sensor.findOneAndUpdate(
     { _id: data.sID, ownedBy: data.ownedBy },
     { $set: { lastValue: data.value, lastDate: data.time }, $inc: { pointer: -1 } },
     { new: true },
     (err, doc) => {
       if (doc.pointer < 0) {
-        dataManager.addDataSegment(doc, data)
+        this.addDataSegment(doc, data)
       } else {
         const fields = {}
         fields[`time.${doc.pointer}`] = data.time
@@ -59,7 +70,7 @@ dataManager.processData = (data) => {
   )
 }
 
-dataManager.addDataSegment = (sensor, data) => {
+dataManager.addDataSegment = function addDataSegment(sensor, data) {
   // Update nextStart on previous DataSegment and get series and ownedBy
   Data.findByIdAndUpdate(
     sensor.segmentId,
@@ -67,24 +78,7 @@ dataManager.addDataSegment = (sensor, data) => {
     { new: true },
     (e, prevData) => {
       // Create a new data segment and store data and prevEnd
-      const newData = {
-        series: prevData.series,
-        ownedBy: prevData.ownedBy,
-        prevEnd: prevData.time[0],
-        nextStart: moment().year(30000).toDate(),
-        time: fill(Array(160), 0),
-        value: fill(Array(160), 0),
-      }
-      newData.time[160 - 1] = data.time
-      newData.value[160 - 1] = data.value
-      const d = new Data(newData)
-      d.save((err, doc) => {
-        // Update Sensor with new segmentId and reset pointer
-        if (err) {
-          console.log(`Error Creating Data Document! sID: ${sensor.id} ownedBy: ${sensor.ownedBy}`)
-        }
-        Sensor.update({ _id: sensor.id }, { segmentId: doc.id, pointer: 160 }).exec()
-      })
+      this.createDataSegment(sensor.id, sensor.ownedBy, prevData, data)
     }
   )
 }
