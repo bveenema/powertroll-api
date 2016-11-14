@@ -1,6 +1,7 @@
 'use strict'
 
 const express = require('express')
+const QueryError = require('../errors/QueryError')
 const dataManager = require('../app/dataManager')
 const Sensor = require('../models').Sensor
 const guard = require('express-jwt-permissions')({
@@ -118,6 +119,28 @@ sensors.post('/data', guard.check('user'), getID, (req, res) => {
   if (response) res.status(202)
   else res.status(400)
   res.send(response)
+  return null
+})
+
+sensors.get('/data/:sID', guard.check('user'), getID, (req, res, next) => {
+  const startDate = parseInt(req.query.start, 10)
+  const stopDate = parseInt(req.query.stop, 10)
+  const numPoints = parseInt(req.query.numPoints, 10)
+
+  if (isNaN(startDate) || isNaN(stopDate) || isNaN(numPoints)) {
+    return next(new QueryError('invalid_query_param', {
+      message: 'One or more query param is NaN, check parameters',
+    }))
+  }
+
+  dataManager.getQuery(startDate, stopDate, numPoints)
+
+  res.status(200)
+  res.json({
+    startDate,
+    stopDate,
+    numPoints,
+  })
   return null
 })
 

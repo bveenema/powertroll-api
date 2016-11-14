@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test'
 const Sensor = require('../../src/models').Sensor
 const dataManager = require('../../src/app/dataManager')
 const mongoose = require('mongoose')
+const moment = require('moment')
 const sin = require('sinon')
 const chai = require('chai')
 const sinonChai = require('sinon-chai')
@@ -229,9 +230,42 @@ describe('/sensors', () => {
     })
   })
 
-  // describe('/GET/data/:sID?start=""?stop=""?numPoints=""', () => {
-  //   it('should process querry strings')
-  //   it('should return the sensors data in the range')
-  //   it('should limit data Points to 1000')
-  // })
+  describe('/GET/data/:sID?start?stop?numPoints', () => {
+    it('should process query strings', (done) => {
+      const startDate = moment().valueOf()
+      const stopDate = moment().add(3, 'days').valueOf()
+      const numPoints = 20
+      const s = new Sensor(defaultSensor)
+      s.save((err, doc) => {
+        chai.request(server)
+            .get(`/sensors/data/${doc.id}?start=${startDate}&stop=${stopDate}&numPoints=${numPoints}`)
+            .set('Authorization', `Bearer ${JWT}`)
+            .end((error, res) => {
+              res.should.have.status(200)
+              res.body.startDate.should.be.eql(startDate)
+              res.body.stopDate.should.be.eql(stopDate)
+              res.body.numPoints.should.be.eql(numPoints)
+              done()
+            })
+      })
+    })
+    it('should return Error if improper query stings', (done) => {
+      const startDate = 'tomorrow'
+      const stopDate = moment().add(3, 'days').valueOf()
+      const numPoints = 'twenty'
+      const s = new Sensor(defaultSensor)
+      s.save((err, doc) => {
+        chai.request(server)
+            .get(`/sensors/data/${doc.id}?start=${startDate}&stop=${stopDate}&numPoints=${numPoints}`)
+            .set('Authorization', `Bearer ${JWT}`)
+            .end((error, res) => {
+              res.should.have.status(400)
+              error.response.body.code.should.be.eql('invalid_query_param')
+              done()
+            })
+      })
+    })
+    it('should return the sensors data in the range')
+    it('should limit data Points to 1000')
+  })
 })
