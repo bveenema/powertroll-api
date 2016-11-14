@@ -10,7 +10,6 @@ const fill = require('lodash.fill')
 const dataManager = {}
 
 dataManager.segLen = 5
-dataManager.maxQuery = 1000
 
 dataManager.newSensor = function newSensor(sID, ownedBy, callback) {
   if (sID == null || ownedBy == null) {
@@ -29,17 +28,13 @@ dataManager.recieveData = function recieveData(data) {
   return false
 }
 
-dataManager.getQuery = function getQuery(seriesId, startDate, stopDate, points, callback) {
-  if (isNaN(startDate) || isNaN(stopDate) || isNaN(points)) {
+dataManager.getQuery = function getQuery(seriesId, startDate, stopDate, callback) { // eslint-disable-line consistent-return, max-len
+  if (isNaN(startDate) || isNaN(stopDate)) {
     return callback(new QueryError('invalid_query_param', {
       message: 'One or more query param is NaN, check parameters',
     }))
   }
-  let numPoints = points
-  if (points > this.maxQuery) numPoints = this.maxQuery
-  this.processQuery(seriesId, startDate, stopDate, numPoints, (err, data) => {
-    return callback(err, data)
-  })
+  this.processQuery(seriesId, startDate, stopDate, (err, data) => callback(err, data))
 }
 
 dataManager.createDataSegment = function createDataSegment(sID, ownedBy, prevData = {}, data = {}) {
@@ -67,6 +62,17 @@ dataManager.createDataSegment = function createDataSegment(sID, ownedBy, prevDat
   })
 }
 
+dataManager.addDataSegment = function addDataSegment(sensor, data) {
+  Data.findByIdAndUpdate(
+    sensor.segmentId,
+    { $set: { nextStart: data.time } },
+    { new: true },
+    (e, prevData) => {
+      this.createDataSegment(sensor.id, sensor.ownedBy, prevData, data)
+    }
+  )
+}
+
 dataManager.processData = function processData(data) {
   Sensor.findOneAndUpdate(
     { _id: data.sID, ownedBy: data.ownedBy },
@@ -85,17 +91,46 @@ dataManager.processData = function processData(data) {
   )
 }
 
-dataManager.addDataSegment = function addDataSegment(sensor, data) {
-  // Update nextStart on previous DataSegment and get series and ownedBy
-  Data.findByIdAndUpdate(
-    sensor.segmentId,
-    { $set: { nextStart: data.time } },
-    { new: true },
-    (e, prevData) => {
-      // Create a new data segment and store data and prevEnd
-      this.createDataSegment(sensor.id, sensor.ownedBy, prevData, data)
-    }
-  )
+dataManager.processQuery =
+  function processQuery(seriesId, startDate, stopDate, callback) {
+    Data.find(
+      { series: seriesId, prevEnd: { $lte: startDate }, nextStart: { $gte: stopDate } },
+      { sort: { prevEnd: 1 } }
+    )
+      .select({ time: 1, value: 1 })
+      .exec((err, dataSegments) => {
+        /*
+          [
+            {
+              time: [date1a, date1b, ...]
+              value: [num1a, num1b, ...]
+            },
+            {
+              time: [date2a, date2b, ...]
+              value: [num2a, num2b, ...]
+            },
+            {
+              time: [date3a, date3b, ...]
+              value: [num3a, num3b, ...]
+            },
+            ...
+          ]
+
+          ==> {
+                time: [date1a, date1b, ... , date2a, date2b, ... date3a, date3b ...]
+                value: [num1a, num1b, ... , num2a, num2b ... , num3a, num3b ...]
+              }
+        */
+        const data = {
+          time: [],
+          value: [],
+        }
+        dataSegments.forEach((dataSegment) => {
+          Array.prototype.push.apply(data.time, dataSegment.time)
+          Array.prototype.push.apply(data.value, dataSegment.value)
+        })
+        return callback(err, data)
+      })
 }
 
 module.exports = dataManager

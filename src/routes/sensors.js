@@ -125,9 +125,8 @@ sensors.post('/data', guard.check('user'), getID, (req, res) => {
 sensors.get('/data/:sID', guard.check('user'), getID, (req, res, next) => {
   const startDate = parseInt(req.query.start, 10)
   const stopDate = parseInt(req.query.stop, 10)
-  const numPoints = parseInt(req.query.numPoints, 10)
 
-  dataManager.getQuery(req.sensor.seriesId, startDate, stopDate, numPoints, (err, data) => {
+  dataManager.getQuery(req.sensor.seriesId, startDate, stopDate, (err, data) => {
     if (err) return next(err)
     res.status(200)
     res.json(data)

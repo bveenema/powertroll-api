@@ -237,18 +237,16 @@ describe('/sensors', () => {
       const parseInt = sinon.spy(global, 'parseInt')
       const startDate = moment().valueOf()
       const stopDate = moment().add(3, 'days').valueOf()
-      const numPoints = 20
       const s = new Sensor(defaultSensor)
       s.save((err, doc) => {
         chai.request(server)
-            .get(`/sensors/data/${doc.id}?start=${startDate}&stop=${stopDate}&numPoints=${numPoints}`)
+            .get(`/sensors/data/${doc.id}?start=${startDate}&stop=${stopDate}`)
             .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(200)
               getQuery.should.have.callCount(1)
               parseInt.should.have.been.calledWith(`${startDate}`)
               parseInt.should.have.been.calledWith(`${stopDate}`)
-              parseInt.should.have.been.calledWith(`${numPoints}`)
               done()
             })
       })
@@ -256,11 +254,10 @@ describe('/sensors', () => {
     it('should return Error if improper query stings', (done) => {
       const startDate = 'tomorrow'
       const stopDate = moment().add(3, 'days').valueOf()
-      const numPoints = 'twenty'
       const s = new Sensor(defaultSensor)
       s.save((err, doc) => {
         chai.request(server)
-            .get(`/sensors/data/${doc.id}?start=${startDate}&stop=${stopDate}&numPoints=${numPoints}`)
+            .get(`/sensors/data/${doc.id}?start=${startDate}&stop=${stopDate}`)
             .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(400)
