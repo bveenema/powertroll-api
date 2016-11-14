@@ -100,6 +100,7 @@ describe('/sensors', () => {
           lastValue: -0.8333333,
           segmentId: new mongoose.Types.ObjectId(),
           pointer: 42,
+          seriesId: new mongoose.Types.ObjectId(),
         }
       )
       chai.request(server)
@@ -112,6 +113,7 @@ describe('/sensors', () => {
             res.body.should.not.have.property('lastValue')
             res.body.should.not.have.property('segmentId')
             res.body.should.not.have.property('pointer')
+            res.body.should.not.have.property('seriesId')
             done()
           })
     })
@@ -223,7 +225,6 @@ describe('/sensors', () => {
             .set('Authorization', `Bearer ${JWT}`)
             .send(dataPacket)
             .end((err, res) => {
-              console.log('res: ', res.body)
               done()
             })
       })
@@ -231,7 +232,9 @@ describe('/sensors', () => {
   })
 
   describe('/GET/data/:sID?start?stop?numPoints', () => {
-    it('should process query strings', (done) => {
+    it('should parse query strings and call dm.getQuery()', (done) => {
+      const getQuery = sinon.stub(dataManager, 'getQuery').yields(null, {})
+      const parseInt = sinon.spy(global, 'parseInt')
       const startDate = moment().valueOf()
       const stopDate = moment().add(3, 'days').valueOf()
       const numPoints = 20
@@ -242,9 +245,10 @@ describe('/sensors', () => {
             .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(200)
-              res.body.startDate.should.be.eql(startDate)
-              res.body.stopDate.should.be.eql(stopDate)
-              res.body.numPoints.should.be.eql(numPoints)
+              getQuery.should.have.callCount(1)
+              parseInt.should.have.been.calledWith(`${startDate}`)
+              parseInt.should.have.been.calledWith(`${stopDate}`)
+              parseInt.should.have.been.calledWith(`${numPoints}`)
               done()
             })
       })
@@ -266,6 +270,5 @@ describe('/sensors', () => {
       })
     })
     it('should return the sensors data in the range')
-    it('should limit data Points to 1000')
   })
 })

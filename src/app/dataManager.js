@@ -2,6 +2,7 @@
 
 const Sensor = require('../models').Sensor
 const Data = require('../models').Data
+const QueryError = require('../errors/QueryError')
 const mongoose = require('mongoose')
 const moment = require('moment')
 const fill = require('lodash.fill')
@@ -9,6 +10,7 @@ const fill = require('lodash.fill')
 const dataManager = {}
 
 dataManager.segLen = 5
+dataManager.maxQuery = 1000
 
 dataManager.newSensor = function newSensor(sID, ownedBy, callback) {
   if (sID == null || ownedBy == null) {
@@ -25,6 +27,19 @@ dataManager.recieveData = function recieveData(data) {
     return true
   }
   return false
+}
+
+dataManager.getQuery = function getQuery(seriesId, startDate, stopDate, points, callback) {
+  if (isNaN(startDate) || isNaN(stopDate) || isNaN(points)) {
+    return callback(new QueryError('invalid_query_param', {
+      message: 'One or more query param is NaN, check parameters',
+    }))
+  }
+  let numPoints = points
+  if (points > this.maxQuery) numPoints = this.maxQuery
+  this.processQuery(seriesId, startDate, stopDate, numPoints, (err, data) => {
+    return callback(err, data)
+  })
 }
 
 dataManager.createDataSegment = function createDataSegment(sID, ownedBy, prevData = {}, data = {}) {
@@ -48,7 +63,7 @@ dataManager.createDataSegment = function createDataSegment(sID, ownedBy, prevDat
       console.log('Error: ', err)
     }
     const ptr = (data.time) ? this.segLen - 1 : this.segLen
-    Sensor.update({ _id: sID }, { segmentId: doc.id, pointer: ptr }).exec()
+    Sensor.update({ _id: sID }, { seriesId: doc.series, segmentId: doc.id, pointer: ptr }).exec()
   })
 }
 

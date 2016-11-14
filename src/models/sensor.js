@@ -37,6 +37,7 @@ const SensorSchema = new Schema({
   lastDate: Date,
   lastValue: Number,
   segmentId: Schema.Types.ObjectId,
+  seriesId: Schema.Types.ObjectId,
   pointer: Number,
 })
 

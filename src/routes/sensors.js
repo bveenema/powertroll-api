@@ -1,7 +1,6 @@
 'use strict'
 
 const express = require('express')
-const QueryError = require('../errors/QueryError')
 const dataManager = require('../app/dataManager')
 const Sensor = require('../models').Sensor
 const guard = require('express-jwt-permissions')({
@@ -60,6 +59,7 @@ sensors.post('/', guard.check('user'), getID, (req, res, next) => {
   delete req.body.lastValue
   delete req.body.segmentId
   delete req.body.pointer
+  delete req.body.seriesId
   s.saveOwner(req.body, req.id, (err, doc) => {
     if (err) {
       if (err.message === 'Device validation failed') err.status = 200
@@ -127,21 +127,12 @@ sensors.get('/data/:sID', guard.check('user'), getID, (req, res, next) => {
   const stopDate = parseInt(req.query.stop, 10)
   const numPoints = parseInt(req.query.numPoints, 10)
 
-  if (isNaN(startDate) || isNaN(stopDate) || isNaN(numPoints)) {
-    return next(new QueryError('invalid_query_param', {
-      message: 'One or more query param is NaN, check parameters',
-    }))
-  }
-
-  dataManager.getQuery(startDate, stopDate, numPoints)
-
-  res.status(200)
-  res.json({
-    startDate,
-    stopDate,
-    numPoints,
+  dataManager.getQuery(req.sensor.seriesId, startDate, stopDate, numPoints, (err, data) => {
+    if (err) return next(err)
+    res.status(200)
+    res.json(data)
+    return null
   })
-  return null
 })
 
 module.exports = sensors
