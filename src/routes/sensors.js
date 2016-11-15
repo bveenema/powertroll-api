@@ -8,6 +8,8 @@ const guard = require('express-jwt-permissions')({
   permissionsProperty: 'app_metadata.permissions',
 })
 const getID = require('../middleware/getID')
+const times = require('lodash.times')
+const moment = require('moment')
 
 const sensors = express.Router({ mergeParams: true })
 
@@ -132,6 +134,58 @@ sensors.get('/data/:sID', guard.check('user'), getID, (req, res, next) => {
     res.json(data)
     return null
   })
+})
+
+sensors.get('/seed', guard.check('admin'), getID, (req, res) => {
+  // create mock data
+  const mockData = times(20, (i) => {
+    return {
+      time: moment().add(i, 'minutes').valueOf(),
+      value: i * 10,
+    }
+  })
+  console.log('mockData: ', mockData)
+
+  // create a sensor
+  const mockSensor = {
+    type: 'foo',
+    connectionStatus: {
+      wireless: 'foo',
+    },
+    dataMeta: {
+      type: 'foo',
+      unit: 'foo',
+    },
+  }
+  const s = new Sensor()
+  s.saveOwner(mockSensor, req.id, (err, doc) => {
+    if (err) {
+      console.log('err: ', err)
+    }
+    dataManager.newSensor(doc.id, req.id, (error) => {
+      if (error) console.log('DM Error: ', error)
+      // wait for sensor to store
+      setTimeout(() => {
+        let i = 0
+        const handle = setInterval(() => {
+          const dataPacket = Object.assign(
+            {},
+            { sID: doc.id },
+            mockData[i],
+            { ownedBy: req.id }
+          )
+          const didWork = dataManager.recieveData(dataPacket)
+          console.log(`data, ${mockData[i]} saved: ${didWork}, ${i}`)
+          i += 1
+          if (i >= 20) clearInterval(handle)
+        }, 200)
+      }, 200)
+    })
+  })
+  // store data
+
+  res.status(200)
+  res.send(true)
 })
 
 module.exports = sensors

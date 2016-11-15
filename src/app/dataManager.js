@@ -93,12 +93,18 @@ dataManager.processData = function processData(data) {
 
 dataManager.processQuery =
   function processQuery(seriesId, startDate, stopDate, callback) {
-    Data.find(
-      { series: seriesId, prevEnd: { $lte: startDate }, nextStart: { $gte: stopDate } },
-      { sort: { prevEnd: 1 } }
-    )
+    console.log('startDate: ', startDate)
+    console.log('stopDate: ', stopDate)
+    Data.find({
+      series: seriesId,
+      'time.4': { $lte: stopDate },
+      'time.0': { $gte: startDate },
+    })
+      .sort({ prevEnd: -1 })
       .select({ time: 1, value: 1 })
       .exec((err, dataSegments) => {
+        console.log('err: ', err)
+        console.log('dataSegments: ', dataSegments)
         /*
           [
             {
@@ -115,6 +121,9 @@ dataManager.processQuery =
             },
             ...
           ]
+
+          Start: 2016-11-15T00:07:15.762Z -> 1479168435762  1479168435562
+          Stop: 2016-11-15T00:18:15.762Z -> 1479169095762  1479169095662
 
           ==> {
                 time: [date1a, date1b, ... , date2a, date2b, ... date3a, date3b ...]
