@@ -125,8 +125,8 @@ sensors.post('/data', guard.check('user'), getID, (req, res) => {
 })
 
 sensors.get('/data/:sID', guard.check('user'), getID, (req, res, next) => {
-  const startDate = parseInt(req.query.start, 10)
-  const stopDate = parseInt(req.query.stop, 10)
+  const startDate = parseInt(req.query.start, 10) || 0
+  const stopDate = parseInt(req.query.stop, 10) || 99999999999999
 
   dataManager.getQuery(req.sensor.seriesId, startDate, stopDate, (err, data) => {
     if (err) return next(err)
@@ -137,8 +137,10 @@ sensors.get('/data/:sID', guard.check('user'), getID, (req, res, next) => {
 })
 
 sensors.get('/seed', guard.check('admin'), getID, (req, res) => {
+  const qty = parseInt(req.query.qty, 10)
+  const numPoints = qty || 10
   // create mock data
-  const mockData = times(20, (i) => {
+  const mockData = times(numPoints, (i) => { // eslint-disable-line
     return {
       time: moment().add(i, 'minutes').valueOf(),
       value: i * 10,
@@ -177,8 +179,8 @@ sensors.get('/seed', guard.check('admin'), getID, (req, res) => {
           const didWork = dataManager.recieveData(dataPacket)
           console.log(`data, ${mockData[i]} saved: ${didWork}, ${i}`)
           i += 1
-          if (i >= 20) clearInterval(handle)
-        }, 200)
+          if (i >= numPoints) clearInterval(handle)
+        }, 300)
       }, 200)
     })
   })

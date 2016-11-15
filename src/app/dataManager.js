@@ -9,7 +9,7 @@ const fill = require('lodash.fill')
 
 const dataManager = {}
 
-dataManager.segLen = 5
+dataManager.segLen = 160
 
 dataManager.newSensor = function newSensor(sID, ownedBy, callback) {
   if (sID == null || ownedBy == null) {
@@ -93,18 +93,14 @@ dataManager.processData = function processData(data) {
 
 dataManager.processQuery =
   function processQuery(seriesId, startDate, stopDate, callback) {
-    console.log('startDate: ', startDate)
-    console.log('stopDate: ', stopDate)
     Data.find({
       series: seriesId,
-      'time.4': { $lte: stopDate },
+      [`time.${this.segLen - 1}`]: { $lte: stopDate },
       'time.0': { $gte: startDate },
     })
       .sort({ prevEnd: -1 })
       .select({ time: 1, value: 1 })
       .exec((err, dataSegments) => {
-        console.log('err: ', err)
-        console.log('dataSegments: ', dataSegments)
         /*
           [
             {
@@ -122,8 +118,17 @@ dataManager.processQuery =
             ...
           ]
 
-          Start: 2016-11-15T00:07:15.762Z -> 1479168435762  1479168435562
-          Stop: 2016-11-15T00:18:15.762Z -> 1479169095762  1479169095662
+          DS_0: 0: 2016-11-15T00:03:15.760Z -> 1479168195760
+                4: 2016-11-15T00:07:15.762Z -> 1479168435762
+          DS_1: 0: 2016-11-15T00:08:15.762Z -> 1479168495762  1479168496762
+                4: 2016-11-15T00:12:15.762Z -> 1479168735762  1479168745762
+          DS_2: 0: 2016-11-15T00:13:15.762Z -> 1479168795762
+                4: 2016-11-15T00:17:15.762Z -> 1479169035762  1479169034762
+          DS_3: 0: 2016-11-15T00:18:15.762Z -> 1479169095762
+                4: 2016-11-15T00:22:15.762Z -> 1479169335762
+
+          Start: 2016-11-15T00:07:15.762Z -> 1479168435762
+          Stop:  2016-11-15T00:18:15.762Z -> 1479169095762
 
           ==> {
                 time: [date1a, date1b, ... , date2a, date2b, ... date3a, date3b ...]
@@ -140,6 +145,6 @@ dataManager.processQuery =
         })
         return callback(err, data)
       })
-}
+  }
 
 module.exports = dataManager
