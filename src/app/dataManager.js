@@ -81,7 +81,7 @@ dataManager.processQuery =
       [`time.${this.segLen - 1}`]: { $lte: stopDate },
       'time.0': { $gte: startDate },
     })
-      .sort({ prevEnd: -1 })
+      .sort({ [`time.${this.segLen - 1}`]: -1 })
       .select({ time: 1, value: 1 })
       .exec((err, dataSegments) => {
         const data = {
