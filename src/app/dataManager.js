@@ -40,7 +40,6 @@ dataManager.getQuery = function getQuery(seriesId, startDate, stopDate, callback
 dataManager.createDataSegment = function createDataSegment(sID, ownedBy, prevData = {}, data = {}) {
   let prevTime
   if (prevData.time) prevTime = prevData.time[0]
-
   const startData = {
     series: prevData.series || new mongoose.Types.ObjectId(),
     ownedBy,

@@ -239,3 +239,8 @@ nextStart: Date,
 time: [Date],
 value: [Number],
 ```
+
+## Data Manager
+The Data Manager utility contains methods that create data stores, process incoming data and  query the data stores.  Care is taken to ensure that the user storing and retrieving the data is the correct owner of the sensor and data.
+
+Schema is based on the fantastic article [Efficient storage of non-periodic time series with MongoDB](https://bluxte.net/musings/2015/01/21/efficient-storage-non-periodic-time-series-mongodb/) but has been modified slightly.
