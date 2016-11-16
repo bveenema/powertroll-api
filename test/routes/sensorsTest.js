@@ -224,7 +224,7 @@ describe('/sensors', () => {
             .post('/sensors/data')
             .set('Authorization', `Bearer ${JWT}`)
             .send(dataPacket)
-            .end((err, res) => {
+            .end(() => {
               done()
             })
       })
@@ -232,8 +232,8 @@ describe('/sensors', () => {
   })
 
   describe('/GET/data/:sID?start?stop?numPoints', () => {
-    it('should parse query strings and call dm.getQuery()', (done) => {
-      const getQuery = sinon.stub(dataManager, 'getQuery').yields(null, {})
+    it('should parse query strings and call dm.query()', (done) => {
+      const query = sinon.stub(dataManager, 'query').yields(null, {})
       const parseInt = sinon.spy(global, 'parseInt')
       const startDate = moment().valueOf()
       const stopDate = moment().add(3, 'days').valueOf()
@@ -244,28 +244,30 @@ describe('/sensors', () => {
             .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
               res.should.have.status(200)
-              getQuery.should.have.callCount(1)
+              query.should.have.callCount(1)
               parseInt.should.have.been.calledWith(`${startDate}`)
               parseInt.should.have.been.calledWith(`${stopDate}`)
               done()
             })
       })
     })
-    it('should return Error if improper query stings', (done) => {
-      const startDate = 'tomorrow'
-      const stopDate = moment().add(3, 'days').valueOf()
+    it('should set default range if invalid or missing query strings', (done) => {
+      const query = sinon.stub(dataManager, 'query').yields(null, {})
+      sinon.stub(Sensor, 'findByIdCheckOwner').yields(null, { id: '12345' })
+      const startDate = 'invalid'
       const s = new Sensor(defaultSensor)
       s.save((err, doc) => {
         chai.request(server)
-            .get(`/sensors/data/${doc.id}?start=${startDate}&stop=${stopDate}`)
+            .get(`/sensors/data/${doc.id}?start=${startDate}`)
             .set('Authorization', `Bearer ${JWT}`)
             .end((error, res) => {
-              res.should.have.status(400)
-              error.response.body.code.should.be.eql('invalid_query_param')
+              res.should.have.status(200)
+              query.should.have.callCount(1)
+              query.should.have.been.calledWith('12345', '12345', 0, 99999999999999)
               done()
             })
       })
     })
-    it('should return the sensors data in the range')
+    it('should return the sensor data in the range')
   })
 })
