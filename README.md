@@ -1,3 +1,69 @@
+## Data Manager
+The Data Manager utility contains methods that create data stores, process incoming data and query the data stores.  Care is taken to ensure that the user storing and retrieving the data is the correct owner of the sensor and data.
+
+Schema is based on the fantastic article [Efficient storage of non-periodic time series with MongoDB](https://bluxte.net/musings/2015/01/21/efficient-storage-non-periodic-time-series-mongodb/) but has been modified slightly.
+
+Data is stored in Data documents which contain the following fields:
+``` JavaScript
+  - series: Schema.Types.ObjectId, //  The id of the sensor the data belongs to
+  - ownedBy: String, // The id of the user whom owns the data
+  - time: [Date], // An array of time stamps corresponding to the values
+  - value: [Number], // An array of values (the data)
+```
+
+Data is tracked in the Sensor document which contains the following fields used for tracking data in addition to descriptive information of the sensor itself:
+``` JavaScript
+  - lastDate: Date, // The timestamp of the most recent data point
+  - lastValue: Number, // The value of the most recent data point
+  - segmentId: Schema.Types.ObjectId, // The current data store new data is placed in
+  - pointer: Number // The last array position in the data store that data was placed in
+```
+
+### Visual Map of the Data Manager
+![Data Manager Map](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Data Manager Map")
+
+When a new Data document is created, the `time` and `value` arrays are pre-allocated with 160 elements.  This is done so the Data document does not change size as new data is added and cause it to be relocated on the disc (see article)
+
+New Data documents are created when the previous document is full or a new sensor is created.
+
+When new data arrives in the Data Manager, it is:
+  1. Checked to make sure the data packet contains a sensorId, ownerId, time, and value
+  2. The Sensor is pulled from the database to get the `segmentId` and last `pointer` and simultaneously sets the `lastValue`, `lastDate`, and decrements the `pointer` fields
+  3a. If the pointer is non-negative, the Data store is updated with the new data
+  3b. If the pointer is negative, a new Data store is created with the new data store in the highest array position
+  
+Data Queries are always done in time ranges. When a data query arrives it:
+  1. Checks to make sure the time range (`startTime`, `stopTime`) is valid
+  2. Queries the database for all documents with corresponding `series` and where the highest `time` element is LTE the `stopTime` and the lowest `time` element is GTE the `startTime`
+  3. The resulting array of documents is converted to an object containing a `time` and `value` array and returned to the client
+  
+The Data Manager has the following client facing functions:
+``` JavaScript
+newSensor(sID, ownedBy, callback)
+  - sID, MongoDB Object ID string
+  - ownedBy, MongoDB Object ID string
+  - callback, function with parmater (err)
+```
+``` JavaScript
+recieveData(data)
+  - data, object with schema {
+          sID: MongoDB Object ID string
+          ownedBy:MongoDB Object ID string
+          time: Number - Unix date w/ milliseconds
+          value: Number
+         }
+```
+``` JavaScript
+query(sID, startDate, stopDate, ownedBy, callback)
+  - sID, MongoDB Object ID string
+  - startDate, Number - Unix date w/ milliseconds
+  - stopDate, Number - Unix date w/ milliseconds
+  - ownedBy, MongoDB Object ID string
+  - callback, function with parameters (err, data)
+```
+
+
+
 # powertroll-api
 ## Description
 The API that interacts with the [web app](https://github.com/bveenema/powertroll-web-app), database and Trolls.
@@ -240,6 +306,7 @@ time: [Date],
 value: [Number],
 ```
 
+<<<<<<< HEAD
 ## Data Manager
 The Data Manager utility contains methods that create data stores, process incoming data and query the data stores.  Care is taken to ensure that the user storing and retrieving the data is the correct owner of the sensor and data.
 
@@ -303,3 +370,5 @@ query(sID, startDate, stopDate, ownedBy, callback)
   - ownedBy, MongoDB Object ID string
   - callback, function with parameters (err, data)
 ```
+=======
+>>>>>>> 02518f46db72b5cbe293171b18b46c894c52677a
