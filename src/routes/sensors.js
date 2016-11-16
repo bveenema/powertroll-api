@@ -61,7 +61,6 @@ sensors.post('/', guard.check('user'), getID, (req, res, next) => {
   delete req.body.lastValue
   delete req.body.segmentId
   delete req.body.pointer
-  delete req.body.seriesId
   s.saveOwner(req.body, req.id, (err, doc) => {
     if (err) {
       if (err.message === 'Device validation failed') err.status = 200
@@ -128,7 +127,7 @@ sensors.get('/data/:sID', guard.check('user'), getID, (req, res, next) => {
   const startDate = parseInt(req.query.start, 10) || 0
   const stopDate = parseInt(req.query.stop, 10) || 99999999999999
 
-  dataManager.getQuery(req.sensor.seriesId, startDate, stopDate, (err, data) => {
+  dataManager.query(req.sensor.id, req.id, startDate, stopDate, (err, data) => {
     if (err) return next(err)
     res.status(200)
     res.json(data)

@@ -11,8 +11,6 @@ const zeroArray = fill(Array(160), 0)
 const DataSchema = new Schema({
   series: Schema.Types.ObjectId,
   ownedBy: String,
-  prevEnd: Date,
-  nextStart: Date,
   time: [Date],
   value: [Number],
 })

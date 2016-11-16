@@ -281,25 +281,25 @@ Data Queries are always done in time ranges. When a data query arrives it:
 
 The Data Manager has the following client facing functions:
 ``` JavaScript
-newSensor(sID, ownedBy, callback)
+newSensor(sID, oID, callback)
   - sID, MongoDB Object ID string
-  - ownedBy, MongoDB Object ID string
+  - oID, MongoDB Object ID string
   - callback, function with parmater (err)
 ```
 ``` JavaScript
 recieveData(data)
   - data, object with schema {
           sID: MongoDB Object ID string
-          ownedBy:MongoDB Object ID string
+          ownedBy: MongoDB Object ID string
           time: Number - Unix date w/ milliseconds
           value: Number
          }
 ```
 ``` JavaScript
-query(sID, startDate, stopDate, ownedBy, callback)
+query(sID, oID, startDate, stopDate, callback)
   - sID, MongoDB Object ID string
+  - oID, MongoDB Object ID string
   - startDate, Number - Unix date w/ milliseconds
   - stopDate, Number - Unix date w/ milliseconds
-  - ownedBy, MongoDB Object ID string
   - callback, function with parameters (err, data)
 ```
