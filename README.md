@@ -114,13 +114,6 @@ module.exports = config
     - POST - Adds data to the db.  Body must have { sensorId, data, time }
     - GET/:sID?start=""?stop?=""?numPoints="" - Retrieves sensor data from the db (not yet implemented)
 
-## Data Manager
-App that processes incoming data from the /sensors/data route.
-
-`dataManager.recieveData` Sends data packet to processData and returns true
-`dataManager.processData` Not yet implemented
-
-
 ## Models
 ### Template
 ``` JavaScript
@@ -138,70 +131,70 @@ meta: {
 ```
 ### Device
 ``` JavaScript
-  name: { type: String },
-  meta: {
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-  },
-  type: { type: String, required: [true, 'Device type required'] },
-  ownedBy: { type: String, required: [true, 'Device owner required'] },
-  connectionStatus: {
-    online: { type: Boolean },
-    lastCommunication: { type: Date },
-  },
-  firmware: { type: String, required: [true, 'Device firmware version required'] },
-  sensors: {
-    wired: [Number],
-    wireless: [Number],
-    network: [Number],
-  },
-  processess: {
-    currentlyRunning: { type: Number },
-    onDevice: [Number],
-    associated: [Number],
-  },
-  location: {
-    description: { type: String },
-    lat: { type: Number, min: [-90, 'Latitude invalid'], max: [90, 'Latitude invalid'] },
-    long: { type: Number, min: [-180, 'Longitude invalid'], max: [90, 'Longitude invalid'] },
-  }
+name: { type: String },
+meta: {
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+},
+type: { type: String, required: [true, 'Device type required'] },
+ownedBy: { type: String, required: [true, 'Device owner required'] },
+connectionStatus: {
+  online: { type: Boolean },
+  lastCommunication: { type: Date },
+},
+firmware: { type: String, required: [true, 'Device firmware version required'] },
+sensors: {
+  wired: [Number],
+  wireless: [Number],
+  network: [Number],
+},
+processess: {
+  currentlyRunning: { type: Number },
+  onDevice: [Number],
+  associated: [Number],
+},
+location: {
+  description: { type: String },
+  lat: { type: Number, min: [-90, 'Latitude invalid'], max: [90, 'Latitude invalid'] },
+  long: { type: Number, min: [-180, 'Longitude invalid'], max: [90, 'Longitude invalid'] },
+}
 ```
 
 ### Process
 ``` JavaScript
 name: { type: String, required: [true, '[name] field required'] },
-  device: {
-    id: { type: Number, required: [true, '[device.id] field required'] },
-    port: { type: Number, required: [true, '[device.port] field required'] },
-  },
-  sensors: { type: [Number], validate: [checkSensor, '[sensors] field required'] },
-  loadType: { type: String, required: [true, '[loadType] field required'] },
-  control: {
-    type: { type: String, required: [true, '[control.type] field required'] },
-    method: { type: String, required: [true, '[control.method] field required'] },
-    value: { type: Number, required: [true, '[control.value] field required'] },
-  },
-  actions: [ActionSchema]
+device: {
+  id: { type: Number, required: [true, '[device.id] field required'] },
+  port: { type: Number, required: [true, '[device.port] field required'] },
+},
+sensors: { type: [Number], validate: [checkSensor, '[sensors] field required'] },
+loadType: { type: String, required: [true, '[loadType] field required'] },
+control: {
+  type: { type: String, required: [true, '[control.type] field required'] },
+  method: { type: String, required: [true, '[control.method] field required'] },
+  value: { type: Number, required: [true, '[control.value] field required'] },
+},
+actions: [ActionSchema]
 ```
 
 ### Action
 ``` JavaScript
 name: { type: String, required: [true, '[name] field required'] },
-  port: { type: Number, required: [true, '[port] field required'] },
-  action: {
-    type: {
-      type: String,
-      required: [true, '[action.type] field required'],
-      validate: [actionValueValidate, '[action.value] field required'],
-    },
-    value: { type: Number },
+port: { type: Number, required: [true, '[port] field required'] },
+action: {
+  type: {
+    type: String,
+    required: [true, '[action.type] field required'],
+    validate: [actionValueValidate, '[action.value] field required'],
   },
-  duration: { type: Number, required: [true, '[duration] field required'] },
-  while: {
-    sensor: Number,
-    level: Number,
-    invert: Boolean,
-  }
+  value: { type: Number },
+},
+duration: { type: Number, required: [true, '[duration] field required'] },
+while: {
+  sensor: Number,
+  level: Number,
+  invert: Boolean,
+}
 ```
 ### Sensor
 ``` JavaScript
@@ -226,16 +219,16 @@ dataMeta: {
     max: [255, 'color channel too high'],
     validate: [threeChannelValidate, 'must have 3 channels'],
   }],
-  latestData: { type: Number },
 },
-dataSets: [Schema.Types.ObjectId]
+lastDate: Date,
+lastValue: Number,
+segmentId: Schema.Types.ObjectId,
+pointer: Number,
 ```
 ### Data
 ``` JavaScript
 series: Schema.Types.ObjectId,
 ownedBy: String,
-prevEnd: Date,
-nextStart: Date,
 time: [Date],
 value: [Number],
 ```
