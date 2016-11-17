@@ -8,7 +8,7 @@
     "test": "mocha --recursive --timeout 10000",
     "test-watch": "mocha --recursive --watch --timeout 10000"
   },
-  "engine": {
+  "engines": {
     "node": "6.9.1"
   },
   "keywords": [
