@@ -16,8 +16,20 @@ if (process.env.NODE_ENV === 'test') {
   expressConfig = require('../config/expressTest.config.js') // eslint-disable-line global-require
   app.user = expressConfig.user
 } else {
-  mongoConfig = require('../config/mongo.config.js').uri // eslint-disable-line global-require
-  expressConfig = require('../config/express.config.js') // eslint-disable-line global-require
+  mongoConfig = process.env.dbUri
+  const jwt = require('express-jwt') // eslint-disable-line global-require
+  const AuthenticationClient = require('auth0').AuthenticationClient // eslint-disable-line global-require
+  expressConfig = {
+    port: 3010,
+    jwtCheck: jwt({
+      secret: new Buffer(process.env.secret, 'base64'),
+      audience: process.env.clientId,
+    }),
+    auth0: new AuthenticationClient({
+      domain: process.env.domain,
+      clientId: process.env.clientId,
+    }),
+  }
   app.use(logger('dev'))
 }
 
