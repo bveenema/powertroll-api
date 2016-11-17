@@ -5,7 +5,7 @@ const templates = require('./templates')
 const devices = require('./devices')
 const processes = require('./processes')
 const sensors = require('./sensors')
-const jwtCheck = require('../../config/express.config').jwtCheck
+const jwt = require('express-jwt')
 const guard = require('express-jwt-permissions')({
   requestProperty: 'user',
   permissionsProperty: 'app_metadata.permissions',
@@ -13,6 +13,11 @@ const guard = require('express-jwt-permissions')({
 const getID = require('../middleware/getID')
 
 const router = express.Router()
+
+const jwtCheck = jwt({
+  secret: new Buffer(process.env.secret, 'base64'),
+  audience: process.env.clientId,
+})
 
 router.use(jwtCheck.unless({ path: ['/apiCheck'] }))
 

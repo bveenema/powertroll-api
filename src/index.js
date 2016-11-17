@@ -17,14 +17,9 @@ if (process.env.NODE_ENV === 'test') {
   app.user = expressConfig.user
 } else {
   mongoConfig = process.env.dbUri
-  const jwt = require('express-jwt') // eslint-disable-line global-require
   const AuthenticationClient = require('auth0').AuthenticationClient // eslint-disable-line global-require
   expressConfig = {
     port: 3010,
-    jwtCheck: jwt({
-      secret: new Buffer(process.env.secret, 'base64'),
-      audience: process.env.clientId,
-    }),
     auth0: new AuthenticationClient({
       domain: process.env.domain,
       clientId: process.env.clientId,
