@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'test') {
   mongoConfig = process.env.dbUri
   const AuthenticationClient = require('auth0').AuthenticationClient // eslint-disable-line global-require
   expressConfig = {
-    port: 3010,
+    port: process.env.PORT,
     auth0: new AuthenticationClient({
       domain: process.env.domain,
       clientId: process.env.clientId,
