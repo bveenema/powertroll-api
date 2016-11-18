@@ -26,6 +26,11 @@ router.get('/apiCheck', (req, res) => {
   res.send('api is alive')
 })
 
+router.post('/webhookTest', (req, res) => {
+  console.log('webhookTest: ', req.body)
+  res.json({ recieved: true })
+})
+
 router.get('/authCheck', guard.check('admin'), (req, res) => {
   res.send(`user verified:  ${req.user}`)
 })
