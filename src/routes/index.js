@@ -19,14 +19,14 @@ const jwtCheck = jwt({
   audience: process.env.clientId,
 })
 
-router.use(jwtCheck.unless({ path: ['/apiCheck', '/webhookTest'] }))
+router.use(jwtCheck.unless({ path: ['/apiCheck'] }))
 
 router.get('/apiCheck', (req, res) => {
   console.log('alive')
   res.send('api is alive')
 })
 
-router.post('/webhookTest', (req, res) => {
+router.post('/webhookTest', guard.check('particle-cloud'), (req, res) => {
   console.log('webhookTest: ', req.body)
   res.json({ recieved: true })
 })
