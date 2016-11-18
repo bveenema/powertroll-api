@@ -19,7 +19,7 @@ const jwtCheck = jwt({
   audience: process.env.clientId,
 })
 
-router.use(jwtCheck.unless({ path: ['/apiCheck'] }))
+router.use(jwtCheck.unless({ path: ['/apiCheck', '/webhookTest'] }))
 
 router.get('/apiCheck', (req, res) => {
   console.log('alive')
