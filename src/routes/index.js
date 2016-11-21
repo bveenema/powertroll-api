@@ -15,8 +15,8 @@ const getID = require('../middleware/getID')
 const router = express.Router()
 
 const jwtCheck = jwt({
-  secret: new Buffer(process.env.secret, 'base64'),
-  audience: process.env.clientId,
+  secret: new Buffer(process.env.SECRET, 'base64'),
+  audience: process.env.CLIENTID,
 })
 
 router.use(jwtCheck.unless({ path: ['/apiCheck'] }))
@@ -27,8 +27,14 @@ router.get('/apiCheck', (req, res) => {
 })
 
 router.post('/webhookTest', guard.check('particle-cloud'), (req, res) => {
-  console.log('webhookTest: ', req.body)
-  res.json({ recieved: true })
+  console.log('webhookTest: ', req.body.data)
+  const data = {}
+  JSON.parse(req.body.data, (key, value) => {
+    console.log('key: ', key)
+    console.log('value: ', value)
+    data[key] = value
+  })
+  res.json(data)
 })
 
 router.get('/authCheck', guard.check('admin'), (req, res) => {

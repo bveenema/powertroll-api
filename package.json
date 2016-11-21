@@ -20,6 +20,7 @@
     "async": "^2.1.2",
     "auth0": "^2.5.0",
     "body-parser": "^1.15.2",
+    "dotenv": "^2.0.0",
     "eslint": "^3.9.1",
     "express": "^4.14.0",
     "express-jwt": "^5.1.0",

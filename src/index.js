@@ -1,5 +1,6 @@
 'use strict'
 
+require('dotenv').config()
 const express = require('express')
 const jsonParser = require('body-parser').json
 const logger = require('morgan')
@@ -16,13 +17,13 @@ if (process.env.NODE_ENV === 'test') {
   expressConfig = require('../config/expressTest.config.js') // eslint-disable-line global-require
   app.user = expressConfig.user
 } else {
-  mongoConfig = process.env.dbUri
+  mongoConfig = process.env.DB_URI
   const AuthenticationClient = require('auth0').AuthenticationClient // eslint-disable-line global-require
   expressConfig = {
     port: process.env.PORT,
     auth0: new AuthenticationClient({
-      domain: process.env.domain,
-      clientId: process.env.clientId,
+      domain: process.env.DOMAIN,
+      clientId: process.env.CLIENTID,
     }),
   }
   app.use(logger('dev'))
