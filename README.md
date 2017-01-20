@@ -255,7 +255,7 @@ Data is tracked in the Sensor document which contains the following fields used 
 ```
 
 ### Visual Map of the Data Manager
-![Data Manager Map](https://github.com/bveenema/powertroll-api/blob/data-manager/documentation/DataManagerMap.jpg "Data Manager Map")
+![Data Manager Map](https://github.com/bveenema/powertroll-api/blob/develop/documentation/DataManagerMap.jpg "Data Manager Map")
 
 When a new Data document is created, the `time` and `value` arrays are pre-allocated with 160 elements.  This is done so the Data document does not change size as new data is added and cause it to be relocated on the disc (see article)
 
